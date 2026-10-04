@@ -1,0 +1,3028 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Bilderrahmen</title>
+<style>
+  :root {
+    --bg: #F5F5F7;
+    --card: #FFFFFF;
+    --blue: #0071E3;
+    --blue-light: #E8F0FD;
+    --text: #1D1D1F;
+    --text-2: #6E6E73;
+    --text-3: #AEAEB2;
+    --border: #E5E5EA;
+    --red: #FF3B30;
+    --green: #34C759;
+    --orange: #FF9500;
+    --yellow: #FFCC00;
+    --shadow: 0 2px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
+
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  header {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-icon {
+    width: 36px; height: 36px;
+    background: var(--text);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .header-icon svg { width: 20px; height: 20px; }
+  h1 { font-size: 19px; font-weight: 600; letter-spacing: -0.3px; }
+  .header-sub { font-size: 13px; color: var(--text-2); margin-top: 1px; }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+
+  /* SD card info */
+  .sd-wrap {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text-2);
+  }
+  .sd-wrap svg { color: var(--text-3); }
+  .sd-bar {
+    width: 44px; height: 6px;
+    background: var(--border);
+    border-radius: 3px; overflow: hidden;
+  }
+  .sd-fill {
+    height: 100%; background: var(--blue);
+    border-radius: 3px; transition: width 0.3s;
+  }
+
+  /* Battery */
+  .battery-wrap { display: flex; align-items: center; gap: 8px; }
+  .battery-label { font-size: 13px; color: var(--text-2); }
+  .battery-widget {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .battery-body {
+    width: 34px; height: 17px;
+    border: 2px solid var(--text-2);
+    border-radius: 4px;
+    padding: 2px;
+    position: relative;
+    display: flex; align-items: center;
+  }
+  .battery-body::after {
+    content: '';
+    width: 3px; height: 7px;
+    background: var(--text-2);
+    border-radius: 0 2px 2px 0;
+    position: absolute;
+    right: -5px; top: 50%;
+    transform: translateY(-50%);
+  }
+  .battery-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .battery-pct { font-size: 13px; font-weight: 500; color: var(--text); }
+
+  /* Status pill */
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    background: var(--blue-light);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--blue);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    background: var(--blue);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── LAYOUT ─────────────────────────────────────────────── */
+  .main-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 48px;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    grid-template-rows: auto auto auto;
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title {
+    font-size: 14px; font-weight: 600; letter-spacing: -0.1px;
+    color: var(--text-2); text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .card-body { padding: 24px; }
+
+  /* ── DISPLAY PREVIEW ────────────────────────────────────── */
+  .display-card {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .display-area {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .eink-frame {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 800/480;
+  }
+
+  .eink-bezel {
+    width: 100%;
+    height: 100%;
+    background: #2C2C2E;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.08) inset;
+  }
+
+  .eink-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #F0EDE8;
+    position: relative;
+  }
+
+  #previewCanvas {
+    width: 100%; height: 100%;
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  .eink-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(240,237,232,0.92);
+    flex-direction: column; gap: 10px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .eink-overlay.show { opacity: 1; }
+  .eink-overlay-text { font-size: 14px; color: var(--text-2); font-weight: 500; }
+
+  /* Pending indicator */
+  .pending-badge {
+    position: absolute;
+    top: -8px; right: -8px;
+    background: var(--orange);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 12px;
+    display: none;
+  }
+  .pending-badge.show { display: block; }
+
+  /* Nav controls */
+  .display-nav {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; max-width: 640px;
+    justify-content: space-between;
+  }
+
+  .nav-group { display: flex; align-items: center; gap: 8px; }
+
+  .nav-btn {
+    width: 44px; height: 44px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text);
+  }
+  .nav-btn:hover { background: var(--bg); border-color: var(--text-3); transform: scale(1.04); }
+  .nav-btn:active { transform: scale(0.97); }
+  .nav-btn svg { width: 18px; height: 18px; }
+
+  .image-counter {
+    font-size: 14px; color: var(--text-2); font-weight: 500;
+    min-width: 80px; text-align: center;
+  }
+
+  .apply-btn {
+    padding: 0 22px;
+    height: 44px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 7px;
+    font-family: inherit;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .apply-btn.active {
+    opacity: 1;
+    pointer-events: auto;
+    animation: applyPulse 1.5s infinite;
+  }
+  @keyframes applyPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,113,227,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(0,113,227,0); }
+  }
+  .apply-btn:hover.active { background: #0066CC; transform: scale(1.02); }
+  .apply-btn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+    animation: none;
+    cursor: default;
+  }
+  .apply-btn svg { width: 16px; height: 16px; }
+
+  /* Next refresh info */
+  .next-refresh {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-3);
+  }
+
+  /* ── SETTINGS PANEL ─────────────────────────────────────── */
+  .settings-card {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+
+  .settings-body { padding: 20px; display: flex; flex-direction: column; gap: 24px; }
+
+  .setting-item label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  /* Segmented control for images/day */
+  .segmented {
+    display: flex;
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .seg-btn {
+    flex: 1;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .seg-btn.active {
+    background: white;
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  }
+
+  /* Time picker */
+  .time-row { display: flex; align-items: center; gap: 8px; }
+  .time-input {
+    height: 38px;
+    padding: 0 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text);
+    background: white;
+    width: 90px;
+    text-align: center;
+    font-weight: 500;
+  }
+  .time-input:focus { outline: none; border-color: var(--blue); }
+
+  .time-desc { font-size: 12px; color: var(--text-3); margin-top: 7px; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); }
+
+  /* Next wakeup */
+  .info-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: 10px;
+  }
+  .info-row-label { font-size: 13px; color: var(--text-2); }
+  .info-row-value { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .toggle-label { font-size: 14px; color: var(--text); }
+  .toggle {
+    width: 44px; height: 26px;
+    background: var(--text-3);
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--green); }
+  .toggle::after {
+    content: '';
+    width: 20px; height: 20px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px; left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { transform: translateX(18px); }
+
+  /* ── UPLOAD CARD ────────────────────────────────────────── */
+  .upload-card { grid-column: 1; grid-row: 2; }
+
+  .upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .upload-area:hover, .upload-area.drag { border-color: var(--blue); background: var(--blue-light); }
+  .upload-icon {
+    width: 52px; height: 52px;
+    background: var(--bg);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px;
+  }
+  .upload-area:hover .upload-icon { background: white; }
+  .upload-icon svg { width: 26px; height: 26px; color: var(--blue); }
+  .upload-title { font-size: 16px; font-weight: 600; }
+  .upload-sub { font-size: 13px; color: var(--text-2); }
+
+  /* Crop tool */
+  #cropSection { display: none; padding: 0 24px 24px; }
+  #cropSection.show { display: block; }
+
+  .crop-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .tool-btn {
+    height: 36px;
+    padding: 0 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .tool-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+  .tool-btn svg { width: 15px; height: 15px; }
+  .tool-btn.primary {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: white;
+  }
+  .tool-btn.primary:hover { background: #0066CC; }
+  .tool-btn.danger { border-color: var(--red); color: var(--red); }
+  .tool-btn.danger:hover { background: #FFF0EF; }
+
+  .crop-canvas-wrap {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: crosshair;
+    border: 1.5px solid var(--border);
+    display: flex;
+  }
+  #cropCanvas { display: block; max-width: 100%; height: auto; }
+
+  .crop-actions {
+    display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end;
+  }
+
+  /* ── GALLERY CARD ───────────────────────────────────────── */
+  .gallery-card { grid-column: 1 / 3; grid-row: 3; }
+
+  .gallery-body { padding: 20px; }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  .gallery-item {
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg);
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+    aspect-ratio: 800/480;
+    grid-column: span 2;
+  }
+  .gallery-item.portrait {
+    aspect-ratio: 480/800;
+    grid-column: span 1;
+  }
+  .gallery-item:hover { transform: scale(1.03); box-shadow: var(--shadow-lg); }
+  .gallery-item.active-frame { border-color: var(--blue); }
+  .gallery-item.pending-frame { border-color: var(--orange); }
+
+  .gallery-thumb {
+    width: 100%; height: 100%;
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  .gallery-item-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    gap: 8px;
+  }
+  .gallery-item:hover .gallery-item-overlay { opacity: 1; }
+
+  .gallery-action-btn {
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: background 0.15s;
+  }
+  .gallery-action-btn:hover { background: rgba(255,255,255,0.28); }
+  .gallery-action-btn.del:hover { background: var(--red); border-color: var(--red); }
+  .gallery-action-btn svg { width: 15px; height: 15px; }
+
+  .gallery-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.6));
+    padding: 16px 8px 7px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+  }
+
+  .active-badge {
+    position: absolute; top: 6px; left: 6px;
+    background: var(--blue);
+    color: white; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 6px;
+  }
+  .pending-badge-g {
+    position: absolute; top: 6px; left: 6px;
+    background: var(--orange);
+    color: white; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 6px;
+  }
+
+  /* Drag & Drop reorder */
+  .gallery-item[draggable="true"] { cursor: grab; }
+  .gallery-item[draggable="true"]:active { cursor: grabbing; }
+  .gallery-item.drag-over {
+    outline: 2.5px dashed var(--blue);
+    outline-offset: 3px;
+    transform: scale(1.03);
+  }
+  .gallery-item.dragging {
+    opacity: 0.35;
+    transform: scale(0.97);
+    pointer-events: none;
+  }
+  .drag-hint {
+    font-size: 11px; color: var(--text-3);
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 0 14px 0;
+  }
+
+  /* Empty gallery */
+  .gallery-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: var(--text-3);
+    font-size: 14px;
+  }
+
+  /* ── TOAST ──────────────────────────────────────────────── */
+  .toast-wrap {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 999; pointer-events: none;
+  }
+  .toast {
+    background: rgba(28,28,30,0.92);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+    pointer-events: none;
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes toastOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-8px); }
+  }
+
+  /* ── MODAL ──────────────────────────────────────────────── */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-bg.show { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: white;
+    border-radius: 20px;
+    width: 380px;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.95) translateY(10px);
+    transition: transform 0.25s;
+    overflow: hidden;
+  }
+  .modal-bg.show .modal { transform: scale(1) translateY(0); }
+  .modal-header {
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 17px; font-weight: 600;
+  }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer {
+    padding: 12px 24px 20px;
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+  .modal-btn {
+    height: 40px; padding: 0 20px;
+    border-radius: 10px; font-size: 14px; font-weight: 500;
+    border: 1.5px solid var(--border); background: white; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .modal-btn.primary { background: var(--red); border-color: var(--red); color: white; }
+  .modal-btn:hover { background: var(--bg); }
+  .modal-btn.primary:hover { background: #CC2E25; }
+
+  /* ── PLAYLISTS ──────────────────────────────────────────── */
+  .playlist-bar {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 12px; flex-wrap: wrap;
+  }
+  .pl-chip {
+    height: 30px; padding: 0 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px; font-size: 12px; font-weight: 500;
+    background: white; color: var(--text-2);
+    cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; gap: 5px;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .pl-chip:hover { border-color: var(--blue); color: var(--blue); }
+  .pl-chip.active { background: var(--text); border-color: var(--text); color: white; }
+  .pl-chip.active:hover { background: #333; }
+  .pl-chip .pl-count {
+    font-size: 11px; opacity: 0.65;
+    background: rgba(255,255,255,0.2);
+    padding: 1px 5px; border-radius: 10px;
+  }
+  .pl-chip.active .pl-count { background: rgba(255,255,255,0.25); }
+  .pl-add-btn {
+    height: 30px; width: 30px;
+    border: 1.5px dashed var(--border);
+    border-radius: 50%; background: none;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-3); transition: all 0.15s; flex-shrink: 0;
+  }
+  .pl-add-btn:hover { border-color: var(--blue); color: var(--blue); border-style: solid; }
+
+  .pl-modal { width: 440px; max-width: 95vw; }
+  .pl-img-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+    max-height: 300px; overflow-y: auto;
+    padding: 2px;
+  }
+  .pl-thumb-item .orient-badge {
+    top: auto; right: auto;
+    bottom: 18px; left: 4px;  /* unten-links → kein Konflikt mit Häkchen oben-rechts */
+  }
+  .pl-thumb-item {
+    position: relative; border-radius: 8px; overflow: hidden;
+    border: 2px solid transparent; cursor: pointer;
+    transition: border-color 0.15s;
+    aspect-ratio: 800/480;
+    grid-column: span 2;
+  }
+  .pl-thumb-item.portrait {
+    aspect-ratio: 480/800;
+    grid-column: span 1;
+  }
+  .pl-thumb-item canvas { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .pl-thumb-item.selected { border-color: var(--blue); }
+  .pl-thumb-item.selected::after {
+    content: '✓';
+    position: absolute; top: 3px; right: 4px;
+    background: var(--blue); color: white;
+    font-size: 10px; font-weight: 700;
+    width: 16px; height: 16px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pl-thumb-name {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.5); color: white;
+    font-size: 9px; padding: 2px 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* Playlist modal orientation filter buttons */
+  .pl-orient-btn {
+    height: 34px; padding: 0 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px; font-size: 13px; font-weight: 500;
+    background: white; color: var(--text-2);
+    cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: all 0.15s;
+  }
+  .pl-orient-btn.active { background: var(--text); border-color: var(--text); color: white; }
+  .pl-orient-btn:hover:not(.active) { border-color: var(--text-3); color: var(--text); }
+  @keyframes refreshPop {
+    0% { filter: brightness(1); }
+    30% { filter: brightness(0.1); }
+    60% { filter: brightness(0.1); }
+    100% { filter: brightness(1); }
+  }
+  .refreshing { animation: refreshPop 1.2s ease; }
+
+  /* ── UPLOAD PROGRESS ────────────────────────────────────── */
+  #uploadProgress { display: none; padding: 0 24px 24px; }
+  #uploadProgress.show { display: block; }
+  .progress-track {
+    height: 6px; background: var(--bg);
+    border-radius: 3px; overflow: hidden; margin: 10px 0;
+  }
+  .progress-fill {
+    height: 100%; background: var(--blue);
+    border-radius: 3px; width: 0%;
+    transition: width 0.3s;
+  }
+  .progress-label { font-size: 13px; color: var(--text-2); }
+
+  /* Orientation toggle */
+  .orient-toggle {
+    display: flex; background: var(--bg); border-radius: 10px; padding: 3px; gap: 2px;
+    border: 1.5px solid var(--border);
+  }
+  .orient-btn {
+    width: 34px; height: 30px;
+    border: none; background: transparent; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s; color: var(--text-3);
+  }
+  .orient-btn.active { background: white; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+  .orient-btn svg { width: 16px; height: 16px; }
+
+  /* Portrait frame shape */
+  .eink-frame.portrait {
+    max-width: 340px;
+    aspect-ratio: 480/800;
+  }
+
+  /* Wrapper mit fester Höhe → Nav bleibt immer an derselben Position */
+  .frame-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 570px; /* deckt Portrait-Frame-Höhe auf Desktop ab */
+  }
+  @media (max-width: 600px) {
+    .frame-container { min-height: 500px; } /* Portrait-Frame auf Mobilgeräten */
+  }
+
+  /* Dithering slider */
+  .dither-row {
+    display: flex; align-items: center; gap: 10px; margin-top: 10px;
+  }
+  .dither-label { font-size: 12px; color: var(--text-3); white-space: nowrap; min-width: 34px; }
+  input[type="range"].dither-slider {
+    flex: 1; height: 4px; -webkit-appearance: none; appearance: none;
+    background: var(--border); border-radius: 2px; outline: none; cursor: pointer;
+  }
+  input[type="range"].dither-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    background: white; border: 2px solid var(--blue);
+    border-radius: 50%; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .dither-val { font-size: 12px; font-weight: 600; color: var(--text); min-width: 26px; text-align: right; }
+
+  /* Orientation badge on gallery items */
+  .orient-badge {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,0.55);
+    color: white; font-size: 10px; font-weight: 600;
+    padding: 2px 6px; border-radius: 5px;
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; gap: 3px;
+  }
+  .orient-badge svg { width: 9px; height: 9px; }
+
+  /* Gallery filter tabs */
+  .gallery-filter {
+    display: flex; gap: 6px; margin-bottom: 14px;
+  }
+  .filter-btn {
+    height: 28px; padding: 0 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 12px; font-weight: 500;
+    background: white; color: var(--text-2);
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .filter-btn.active { background: var(--text); border-color: var(--text); color: white; }
+  .filter-btn:hover:not(.active) { border-color: var(--text-3); color: var(--text); }
+
+  /* Mobile/tablet adjustments */
+  @media (max-width: 860px) {
+    .main-wrap {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+    .settings-card { grid-column: 1; grid-row: 2; }
+    .upload-card { grid-row: 3; }
+    .gallery-card { grid-column: 1; grid-row: 4; }
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 0 16px; }
+    h1 { font-size: 17px; }
+    .main-wrap { padding: 16px 14px 40px; gap: 14px; }
+    .header-right { gap: 12px; }
+    .battery-label { display: none; }
+    .sd-wrap { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="14" rx="2"/>
+        <path d="M8 21h8M12 17v4"/>
+      </svg>
+    </div>
+    <div>
+      <div style="font-size:17px;font-weight:600;letter-spacing:-0.3px;">Bilderrahmen</div>
+      <div style="font-size:12px;color:var(--text-2);">7.3″ Spectra 6 · ESP32-S3</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sd-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="6" x2="11" y2="6"/><line x1="13" y1="6" x2="13" y2="6"/><line x1="11" y1="10" x2="11" y2="10"/></svg>
+      <div class="sd-bar"><div class="sd-fill" id="sdFill" style="width:14%"></div></div>
+      <span id="sdFree">28.9 MB frei</span>
+    </div>
+    <div class="battery-wrap">
+      <span class="battery-label" id="battLabel">78.0%</span>
+      <div class="battery-widget">
+        <div class="battery-body"><div class="battery-fill" id="battFill" style="width:78%"></div></div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span id="statusText">Bereit</span>
+    </div>
+  </div>
+</header>
+
+<div class="main-wrap">
+
+  <!-- ── DISPLAY PREVIEW ── -->
+  <div class="card display-card">
+    <div class="card-header">
+      <span class="card-title">Display Vorschau</span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="orient-toggle">
+          <button class="orient-btn active" id="orientLandBtn" onclick="setOrientation('landscape')" title="Querformat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+          </button>
+          <button class="orient-btn" id="orientPortBtn" onclick="setOrientation('portrait')" title="Hochformat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>
+          </button>
+        </div>
+        <span class="next-refresh" id="nextRefresh">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Nächster Wechsel: 02:00 Uhr
+        </span>
+      </div>
+    </div>
+    <div class="display-area">
+      <div class="frame-container">
+        <div class="eink-frame" id="einkFrame">
+          <div class="eink-bezel">
+            <div class="eink-screen">
+              <canvas id="previewCanvas" width="800" height="480"></canvas>
+              <div class="eink-overlay" id="einkOverlay">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.8"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path d="M9 10a.5.5 0 100-1 .5.5 0 000 1z" fill="currentColor"/><path d="M15 10a.5.5 0 100-1 .5.5 0 000 1z" fill="currentColor"/><path d="M9.5 15s1 1.5 2.5 1.5 2.5-1.5 2.5-1.5"/></svg>
+                <span class="eink-overlay-text">Display wird aktualisiert…</span>
+              </div>
+            </div>
+          </div>
+          <div class="pending-badge" id="pendingBadge">Ausstehend</div>
+        </div>
+      </div>
+
+      <div class="display-nav">
+        <div class="nav-group">
+          <button class="nav-btn" onclick="navImage(-3)" title="3 zurück">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+          </button>
+          <button class="nav-btn" onclick="navImage(-1)" title="zurück">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span class="image-counter" id="imageCounter">1 / 5</span>
+          <button class="nav-btn" onclick="navImage(1)" title="weiter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="nav-btn" onclick="navImage(3)" title="3 weiter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+          </button>
+        </div>
+
+        <button class="apply-btn" id="applyBtn" onclick="applyImage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Anwenden
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div class="card settings-card">
+    <div class="card-header"><span class="card-title">Einstellungen</span></div>
+    <div class="settings-body">
+
+      <div class="setting-item">
+        <label>Bilder pro Tag</label>
+        <div class="segmented" id="imgPerDay">
+          <button class="seg-btn" onclick="setImgPerDay(1, this)">1×</button>
+          <button class="seg-btn active" onclick="setImgPerDay(2, this)">2×</button>
+          <button class="seg-btn" onclick="setImgPerDay(4, this)">4×</button>
+          <button class="seg-btn" onclick="setImgPerDay(6, this)">6×</button>
+        </div>
+        <div class="time-desc" id="scheduleDesc">Wechsel um 02:00 und 14:00 Uhr</div>
+      </div>
+
+      <div class="setting-item">
+        <label>Erste Wechsel-Uhrzeit</label>
+        <div class="time-row">
+          <input type="time" class="time-input" id="startTime" value="02:00" onchange="updateSchedule()">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="setting-item">
+        <label>Gerätestatus</label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="info-row">
+            <span class="info-row-label">Akkustand</span>
+            <span class="info-row-value" id="battPct">78%</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row-label">Bilder auf SD</span>
+            <span class="info-row-value" id="sdCount">5 Bilder</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row-label">SD-Karte belegt</span>
+            <span class="info-row-value" id="sdUsedInfo">5.5 MB / 32 GB</span>
+          </div>
+          <div class="info-row" style="flex-direction:column;align-items:stretch;gap:5px">
+            <div style="display:flex;justify-content:space-between">
+              <span class="info-row-label">SD-Speicher</span>
+              <span class="info-row-value" id="sdFreeInfo">32.0 GB frei</span>
+            </div>
+            <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+              <div id="sdBarSettings" style="height:100%;width:0%;background:var(--blue);border-radius:3px;transition:width 0.4s"></div>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="info-row-label">Nächster Wakeup</span>
+            <span class="info-row-value" id="nextWakeup">02:00 Uhr</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row-label">Letzter Wechsel</span>
+            <span class="info-row-value">Heute, 02:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="setting-item">
+        <label>WLAN Deep Sleep Timeout</label>
+        <div class="segmented" id="sleepTimeout">
+          <button class="seg-btn" onclick="setSleepTimeout(2, this)">2 Min</button>
+          <button class="seg-btn active" onclick="setSleepTimeout(5, this)">5 Min</button>
+          <button class="seg-btn" onclick="setSleepTimeout(10, this)">10 Min</button>
+          <button class="seg-btn" onclick="setSleepTimeout(30, this)">30 Min</button>
+        </div>
+        <div class="time-desc" id="sleepTimeoutDesc">AP schaltet sich nach 5 Minuten ohne Aktivität ab</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="setting-item">
+        <label>RTC Uhrzeit</label>
+        <div style="background:var(--bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px">
+          <!-- Current time display -->
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:22px;font-weight:600;letter-spacing:-0.5px;font-variant-numeric:tabular-nums" id="rtcClock">--:--:--</div>
+              <div style="font-size:12px;color:var(--text-3);margin-top:2px" id="rtcDate">Nicht synchronisiert</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--text-3)">DS3231 Status</div>
+              <div style="display:flex;align-items:center;gap:5px;margin-top:4px;justify-content:flex-end">
+                <div style="width:7px;height:7px;border-radius:50%;background:var(--text-3)" id="rtcStatusDot"></div>
+                <span style="font-size:12px;font-weight:500;color:var(--text-2)" id="rtcStatusText">Nicht sync.</span>
+              </div>
+            </div>
+          </div>
+          <!-- Manual time input -->
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="datetime-local" id="manualTimeInput"
+              style="flex:1;height:38px;padding:0 10px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;color:var(--text);background:white"
+              onchange="onManualTimeChange()">
+          </div>
+          <!-- Sync buttons -->
+          <div style="display:flex;gap:8px">
+            <button class="tool-btn primary" onclick="syncRtcNow()" style="flex:1;height:38px;justify-content:center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+              Browserzeit übernehmen
+            </button>
+            <button class="tool-btn" onclick="syncRtcManual()" style="height:38px" id="manualSyncBtn" title="Manuelle Zeit übernehmen" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg>
+              Manuell
+            </button>
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.5" id="rtcSyncNote">
+            ⚠️ Zeit wird nur gesetzt wenn WLAN aktiv ist. Der DS3231 hält die Zeit auch ohne Strom (CR2032).
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="setting-item">
+        <label>Optionen</label>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="toggle-row">
+            <span class="toggle-label">Zufällige Reihenfolge</span>
+            <button class="toggle" id="toggleShuffle" onclick="toggleSwitch(this)"></button>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px">Wiedergabe-Format</div>
+            <div class="segmented" id="playOrientSeg">
+              <button class="seg-btn active" onclick="setPlayOrientation('all',    this)">Alle</button>
+              <button class="seg-btn"        onclick="setPlayOrientation('landscape', this)">
+                <svg width="13" height="9" viewBox="0 0 24 16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:4px"><rect x="1" y="1" width="22" height="14" rx="2"/></svg>Quer
+              </button>
+              <button class="seg-btn"        onclick="setPlayOrientation('portrait',  this)">
+                <svg width="9" height="13" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><rect x="1" y="1" width="14" height="22" rx="2"/></svg>Hoch
+              </button>
+            </div>
+            <div class="time-desc" id="playOrientDesc" style="margin-top:6px">Alle Bilder werden abgespielt</div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px">Aktive Playlist</div>
+            <select id="activePlSelect" onchange="setActivePl(this.value)"
+              style="width:100%;height:36px;border-radius:9px;border:1.5px solid var(--border);
+                     background:white;color:var(--text);font-family:inherit;font-size:13px;
+                     padding:0 10px;cursor:pointer;outline:none">
+              <option value="">Alle Bilder</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── UPLOAD ── -->
+  <div class="card upload-card">
+    <div class="card-header">
+      <span class="card-title">Bild hochladen</span>
+      <button class="tool-btn" onclick="document.getElementById('fileInput').click()" style="height:32px;padding:0 12px;font-size:12px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Datei wählen
+      </button>
+    </div>
+
+    <div style="padding:20px" id="dropZoneWrap">
+      <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="upload-title">Foto hierher ziehen</div>
+        <div class="upload-sub">oder klicken zum Auswählen · JPEG, PNG, WEBP</div>
+      </div>
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
+
+    <div id="cropSection">
+      <div class="crop-toolbar">
+        <button class="tool-btn" onclick="rotateCrop(-90)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          −90°
+        </button>
+        <button class="tool-btn" onclick="rotateCrop(90)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          +90°
+        </button>
+        <button class="tool-btn" onclick="resetCrop()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18"/></svg>
+          Reset
+        </button>
+        <span style="flex:1"></span>
+        <button class="tool-btn danger" onclick="cancelUpload()">Abbrechen</button>
+        <button class="tool-btn primary" onclick="doUpload()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Hochladen
+        </button>
+      </div>
+
+      <!-- Upload settings bar -->
+      <div style="background:var(--bg);border-radius:12px;padding:14px 16px;margin-bottom:14px;display:flex;flex-direction:column;gap:12px">
+        <!-- Crop mode -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <span style="font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.4px">Zuschnitt</span>
+          <div class="segmented" style="width:auto;gap:4px">
+            <button class="seg-btn active" id="cropModeAuto" onclick="setCropMode('auto')" style="padding:0 14px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Auto
+            </button>
+            <button class="seg-btn" id="cropModeManual" onclick="setCropMode('manual')" style="padding:0 14px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Manuell
+            </button>
+          </div>
+        </div>
+        <!-- Orientation for this image -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <span style="font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.4px">Format</span>
+          <div class="segmented" style="width:auto;gap:4px">
+            <button class="seg-btn active" id="upOrientLand" onclick="setUploadOrientation('landscape',this)" style="padding:0 14px">
+              <svg width="14" height="10" viewBox="0 0 24 16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><rect x="1" y="1" width="22" height="14" rx="2"/></svg>Querformat
+            </button>
+            <button class="seg-btn" id="upOrientPort" onclick="setUploadOrientation('portrait',this)" style="padding:0 14px">
+              <svg width="10" height="14" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px"><rect x="1" y="1" width="14" height="22" rx="2"/></svg>Hochformat
+            </button>
+          </div>
+        </div>
+        <!-- E-Ink filter toggle -->
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:13px;font-weight:500;color:var(--text)">E-Ink Vorschau-Filter</span>
+          <button class="toggle on" id="uploadToggleFilter" onclick="this.classList.toggle('on'); drawCropCanvas()"></button>
+        </div>
+        <!-- Dithering toggle + slider -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Dithering (Floyd-Steinberg)</span>
+            <button class="toggle on" id="uploadToggleDither" onclick="this.classList.toggle('on'); document.getElementById('uploadDitherSliderWrap').style.opacity=this.classList.contains('on')?'1':'0.4'; drawCropCanvas()"></button>
+          </div>
+          <div class="dither-row" id="uploadDitherSliderWrap">
+            <span class="dither-label">Stärke</span>
+            <input type="range" class="dither-slider" id="uploadDitherStrength" min="0" max="100" value="100"
+              oninput="document.getElementById('uploadDitherVal').textContent=this.value+'%'; drawCropCanvas()">
+            <span class="dither-val" id="uploadDitherVal">100%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="crop-canvas-wrap" id="cropWrap">
+        <canvas id="cropCanvas"></canvas>
+      </div>
+    </div>
+
+    <div id="uploadProgress">
+      <div class="progress-label" id="progressLabel">Konvertiere zu BMP…</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </div>
+
+  <!-- ── GALLERY ── -->
+  <div class="card gallery-card">
+    <div class="card-header">
+      <span class="card-title">Wiedergabeliste</span>
+      <span style="font-size:13px;color:var(--text-2)" id="galleryCount">5 Bilder</span>
+    </div>
+    <div class="gallery-body">
+      <!-- Playlist chips -->
+      <div class="playlist-bar" id="playlistBar">
+        <!-- rendered by JS -->
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="gallery-filter">
+          <button class="filter-btn active" onclick="setGalleryFilter('all', this)">Alle</button>
+          <button class="filter-btn" onclick="setGalleryFilter('landscape', this)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px;margin-right:4px"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>Quer
+          </button>
+          <button class="filter-btn" onclick="setGalleryFilter('portrait', this)">
+            <svg width="9" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px;margin-right:4px"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>Hoch
+          </button>
+        </div>
+        <div class="drag-hint" style="padding:0">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>
+          Drag & Drop
+        </div>
+      </div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Playlist edit modal -->
+<div class="modal-bg" id="playlistModal">
+  <div class="modal pl-modal">
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <span id="plModalTitle">Neue Playlist</span>
+      <button onclick="closePlModal()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:20px;line-height:1">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+      <!-- Name input -->
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Name</div>
+        <input type="text" id="plNameInput" placeholder="z.B. Sommer, Familie, Natur…"
+          style="width:100%;height:40px;padding:0 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);outline:none;transition:border-color 0.15s"
+          onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <!-- Image picker -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px">
+            Bilder auswählen
+            <span id="plSelectedCount" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3);margin-left:6px">0 ausgewählt</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="pl-orient-btn active" id="plFilterAll"  onclick="plSetFilter('all',this)">Alle</button>
+            <button class="pl-orient-btn"        id="plFilterLand" onclick="plSetFilter('landscape',this)">
+              <svg width="13" height="9" viewBox="0 0 24 16" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="1" width="22" height="14" rx="2"/></svg>Quer
+            </button>
+            <button class="pl-orient-btn"        id="plFilterPort" onclick="plSetFilter('portrait',this)">
+              <svg width="9" height="13" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="1" width="14" height="22" rx="2"/></svg>Hoch
+            </button>
+          </div>
+        </div>
+        <div class="pl-img-grid" id="plImgGrid"></div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="modal-btn" id="plDeleteBtn" style="color:var(--red);border-color:var(--red);display:none" onclick="deletePlaylist()">Löschen</button>
+      <div style="display:flex;gap:8px;margin-left:auto">
+        <button class="modal-btn" onclick="closePlModal()">Abbrechen</button>
+        <button class="modal-btn primary" style="background:var(--blue);border-color:var(--blue)" onclick="savePlModal()">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Image settings modal -->
+<div class="modal-bg" id="imgSettingsModal">
+  <div class="modal">
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Bild-Einstellungen</span>
+      <button onclick="closeImgSettings()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:20px;line-height:1">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:16px">
+      <!-- Thumb preview -->
+      <div style="display:flex;align-items:center;gap:12px">
+        <canvas id="imgSettingsThumb" width="120" height="72" style="border-radius:8px;border:1.5px solid var(--border);flex-shrink:0"></canvas>
+        <div>
+          <div style="font-size:14px;font-weight:600" id="imgSettingsName">Bild_01.bmp</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:3px">~1.1 MB · BMP 24bit</div>
+        </div>
+      </div>
+      <!-- Orientation selector -->
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Format / Ausrichtung</div>
+        <div class="segmented">
+          <button class="seg-btn" id="imgSettingsLand" onclick="setImgSettingsOrient('landscape')">
+            <svg width="13" height="9" viewBox="0 0 24 16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:5px"><rect x="1" y="1" width="22" height="14" rx="2"/></svg>Querformat
+          </button>
+          <button class="seg-btn" id="imgSettingsPort" onclick="setImgSettingsOrient('portrait')">
+            <svg width="9" height="13" viewBox="0 0 16 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px"><rect x="1" y="1" width="14" height="22" rx="2"/></svg>Hochformat
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="modal-btn" style="color:var(--red);border-color:var(--red)" onclick="openDeleteFromSettings()">Löschen</button>
+      <button class="modal-btn primary" style="background:var(--blue);border-color:var(--blue)" onclick="closeImgSettings()">Fertig</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete modal -->
+<div class="modal-bg" id="deleteModal">
+  <div class="modal">
+    <div class="modal-header">Bild löschen?</div>
+    <div class="modal-body" style="color:var(--text-2);font-size:14px;line-height:1.5">
+      Dieses Bild wird dauerhaft von der SD-Karte gelöscht und kann nicht wiederhergestellt werden.
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn" onclick="closeModal()">Abbrechen</button>
+      <button class="modal-btn primary" onclick="confirmDelete()">Löschen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── E-INK PALETTE (für Upload-Vorschau und Konvertierung) ──────
+const EINK_PALETTE = [
+  [28,  28,  28 ],  // Black
+  [228, 223, 210],  // White (creamy)
+  [172, 48,  35 ],  // Red
+  [52,  115, 58 ],  // Green
+  [40,  72,  145],  // Blue
+  [210, 175, 45 ],  // Yellow
+];
+
+
+function closestPaletteColor(r, g, b) {
+  let best = 0, bestDist = Infinity;
+  for(let j = 0; j < EINK_PALETTE.length; j++) {
+    const [pr, pg, pb] = EINK_PALETTE[j];
+    // Perceptual weighted distance (luminance-aware)
+    const dist = 0.299*(r-pr)**2 + 0.587*(g-pg)**2 + 0.114*(b-pb)**2;
+    if(dist < bestDist) { bestDist = dist; best = j; }
+  }
+  return EINK_PALETTE[best];
+}
+
+function applyEinkPalette(ctx, w, h, strength = 1.0, dither = true) {
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+
+  const rf = new Float32Array(w * h);
+  const gf = new Float32Array(w * h);
+  const bf = new Float32Array(w * h);
+  for(let i = 0; i < w * h; i++) {
+    rf[i] = d[i*4];
+    gf[i] = d[i*4+1];
+    bf[i] = d[i*4+2];
+  }
+
+  for(let y = 0; y < h; y++) {
+    for(let x = 0; x < w; x++) {
+      const idx = y * w + x;
+      const or = Math.max(0, Math.min(255, rf[idx]));
+      const og = Math.max(0, Math.min(255, gf[idx]));
+      const ob = Math.max(0, Math.min(255, bf[idx]));
+
+      const [nr, ng, nb] = closestPaletteColor(or, og, ob);
+
+      d[idx*4]   = nr;
+      d[idx*4+1] = ng;
+      d[idx*4+2] = nb;
+
+      if(dither && strength > 0) {
+        const er = (or - nr) * strength;
+        const eg = (og - ng) * strength;
+        const eb = (ob - nb) * strength;
+
+        if(x+1 < w) {
+          const i2 = idx+1;
+          rf[i2] += er*7/16; gf[i2] += eg*7/16; bf[i2] += eb*7/16;
+        }
+        if(y+1 < h && x-1 >= 0) {
+          const i2 = idx+w-1;
+          rf[i2] += er*3/16; gf[i2] += eg*3/16; bf[i2] += eb*3/16;
+        }
+        if(y+1 < h) {
+          const i2 = idx+w;
+          rf[i2] += er*5/16; gf[i2] += eg*5/16; bf[i2] += eb*5/16;
+        }
+        if(y+1 < h && x+1 < w) {
+          const i2 = idx+w+1;
+          rf[i2] += er*1/16; gf[i2] += eg*1/16; bf[i2] += eb*1/16;
+        }
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// ── STATE ─────────────────────────────────────────────────────
+let images = [];
+let currentIndex = 0;
+let pendingIndex = null;
+let imgPerDay = 2;
+let deleteTarget = null;
+let orientation = 'landscape';
+let galleryFilter = 'all';
+let ditherEnabled = true;
+let ditherStrengthVal = 1.0;
+
+// ── PLAYLISTS ─────────────────────────────────────────────────
+// Each playlist: { id, name, imageIds: Set<id> }
+let playlists = [];
+let activePlaylistId = null;      // Aktive Playlist → ESP (auto-cycling)
+let galleryPlaylistFilter = null; // Galerie-Filter → nur zum Stöbern, kein ESP-Sync
+let editingPlaylistId = null;
+
+// ── API-HILFSFUNKTIONEN ────────────────────────────────────────
+
+async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), timeout);
+  try {
+    return await fetch(url, { ...options, signal: ctrl.signal });
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+// BMP-Encoder: Canvas → ArrayBuffer (24-bit, Top-Down)
+function canvasToBmp(canvas) {
+  const w = canvas.width, h = canvas.height;
+  const px = canvas.getContext('2d').getImageData(0, 0, w, h).data;
+  const rowSize = (w * 3 + 3) & ~3;
+  const buf = new ArrayBuffer(54 + rowSize * h);
+  const v = new DataView(buf);
+  const b = new Uint8Array(buf);
+  // File header
+  b[0] = 0x42; b[1] = 0x4D;
+  v.setUint32(2,  54 + rowSize * h, true);
+  v.setUint32(10, 54, true);
+  // Info header (BITMAPINFOHEADER)
+  v.setUint32(14, 40,   true);
+  v.setInt32( 18, w,    true);
+  v.setInt32( 22, -h,   true); // negativ = Top-Down, kein Zeilenumkehren nötig
+  v.setUint16(26, 1,    true);
+  v.setUint16(28, 24,   true);
+  v.setUint32(34, rowSize * h, true);
+  v.setInt32( 38, 2835, true);
+  v.setInt32( 42, 2835, true);
+  // Pixel-Daten: RGB → BGR
+  for (let y = 0; y < h; y++) {
+    const row = 54 + y * rowSize;
+    for (let x = 0; x < w; x++) {
+      const s = (y * w + x) * 4;
+      b[row + x*3]     = px[s+2]; // B
+      b[row + x*3 + 1] = px[s+1]; // G
+      b[row + x*3 + 2] = px[s];   // R
+    }
+  }
+  return buf;
+}
+
+// BMP vom ESP laden, dekodieren und als Canvas im imgObj speichern.
+// Zeigt sofort den Thumbnail und aktualisiert die Vorschau wenn der BMP bereit ist.
+async function loadBmpPreview(imgObj, imgIdx) {
+  if (imgObj.previewCanvas || imgObj._loadingPreview) return;
+  imgObj._loadingPreview = true;
+  document.getElementById('statusText').textContent = 'Lade Vorschau…';
+
+  try {
+    const res = await fetchWithTimeout(`/images/${imgObj.name}`, {}, 20000);
+    if (!res.ok) return;
+    const buf = await res.arrayBuffer();
+    const view = new DataView(buf);
+    const bytes = new Uint8Array(buf);
+
+    // BMP-Header validieren
+    if (view.getUint8(0) !== 0x42 || view.getUint8(1) !== 0x4D) return;
+    const dataOffset = view.getUint32(10, true);
+    const w    = view.getInt32(18, true);
+    const h    = view.getInt32(22, true);
+    if (view.getUint16(28, true) !== 24) return; // nur 24-bit
+
+    const absH    = Math.abs(h);
+    const flipY   = h > 0; // positives h = Zeilen von unten nach oben gespeichert
+    const rowSize = (w * 3 + 3) & ~3;
+
+    const c = document.createElement('canvas');
+    c.width = w; c.height = absH;
+    const ctx = c.getContext('2d');
+    const id = ctx.createImageData(w, absH);
+    const d = id.data;
+
+    for (let y = 0; y < absH; y++) {
+      const srcY = flipY ? (absH - 1 - y) : y;
+      const row  = dataOffset + srcY * rowSize;
+      for (let x = 0; x < w; x++) {
+        const si = row + x * 3;
+        const di = (y * w + x) * 4;
+        d[di]     = bytes[si + 2]; // R (BMP ist BGR)
+        d[di + 1] = bytes[si + 1]; // G
+        d[di + 2] = bytes[si];     // B
+        d[di + 3] = 255;
+      }
+    }
+    ctx.putImageData(id, 0, 0);
+    imgObj.previewCanvas = c;
+
+    // Vorschau neu zeichnen falls dieses Bild gerade angezeigt wird
+    const shown = pendingIndex !== null ? pendingIndex : currentIndex;
+    if (shown === imgIdx) renderDisplay(imgIdx, false);
+
+  } catch(e) { /* Thumbnail bleibt als Fallback */ }
+  finally {
+    imgObj._loadingPreview = false;
+    document.getElementById('statusText').textContent = 'Bereit';
+  }
+}
+
+async function fetchStatus() {
+  try {
+    const res = await fetchWithTimeout('/api/status');
+    if (!res.ok) return;
+    const d = await res.json();
+    updateBattery(d.battery_pct, d.battery_v);
+    updateSdDisplay(d.sd_free_mb, d.sd_total_mb);
+  } catch(e) { /* Verbindungsfehler – still ignorieren */ }
+}
+
+async function fetchImages() {
+  try {
+    const res = await fetchWithTimeout('/api/images');
+    if (!res.ok) return;
+    const list = await res.json();
+
+    const ts = Date.now(); // Cache-Buster für diesen Fetch
+    images = list.map((item, i) => ({
+      id: i, version: ts, name: item.name, orientation: item.orientation,
+      thumbImg: new Image(), previewCanvas: null,
+    }));
+
+    // Thumbnails asynchron laden – Gallery aktualisiert sich beim Laden
+    images.forEach((imgObj, idx) => {
+      imgObj.thumbImg.src = `/thumbnails/${imgObj.name.replace('.bmp', '.jpg')}?v=${imgObj.version}`;
+      imgObj.thumbImg.onload = () => {
+        updateGallery();
+        const shown = pendingIndex !== null ? pendingIndex : currentIndex;
+        if (shown === idx) renderDisplay(idx, false);
+      };
+    });
+
+    // currentIndex mit dem tatsächlich angezeigten Bild auf dem ESP synchronisieren
+    try {
+      const sRes = await fetchWithTimeout('/api/status', {}, 5000);
+      if (sRes.ok) {
+        const s = await sRes.json();
+        updateBattery(s.battery_pct, s.battery_v);
+        updateSdDisplay(s.sd_free_mb, s.sd_total_mb);
+        if (s.current_image) {
+          const name = s.current_image.replace('/images/', '');
+          const idx  = images.findIndex(img => img.name === name);
+          if (idx >= 0) currentIndex = idx;
+        }
+      }
+    } catch(e) {}
+
+    if (images.length > 0) renderDisplay(currentIndex, false);
+    renderPlaylistBar();
+    updateGallery();
+    updateCounter();
+  } catch(e) {
+    updateGallery(); // zeigt Leer-Zustand
+  }
+}
+
+// ── DISPLAY RENDERING ──────────────────────────────────────────
+const previewCanvas = document.getElementById('previewCanvas');
+const previewCtx = previewCanvas.getContext('2d');
+
+// Passt nur die Optik des Rahmens an — ohne Navigation oder renderDisplay-Aufruf.
+// Wird von renderDisplay() genutzt um den Rahmen ans aktuelle Bild anzupassen.
+function updateFrameOrientation(orient) {
+  if (orientation === orient) return;
+  orientation = orient;
+  const frame  = document.getElementById('einkFrame');
+  const canvas = document.getElementById('previewCanvas');
+  document.getElementById('orientLandBtn').classList.toggle('active', orient === 'landscape');
+  document.getElementById('orientPortBtn').classList.toggle('active', orient === 'portrait');
+  if (orient === 'portrait') {
+    frame.classList.add('portrait');
+    canvas.width = 480; canvas.height = 800;
+  } else {
+    frame.classList.remove('portrait');
+    canvas.width = 800; canvas.height = 480;
+  }
+}
+
+function setOrientationSilent(orient) {
+  orientation = orient;
+  const frame = document.getElementById('einkFrame');
+  const canvas = document.getElementById('previewCanvas');
+  document.getElementById('orientLandBtn').classList.toggle('active', orient === 'landscape');
+  document.getElementById('orientPortBtn').classList.toggle('active', orient === 'portrait');
+  if(orient === 'portrait') {
+    frame.classList.add('portrait');
+    canvas.width = 480; canvas.height = 800;
+  } else {
+    frame.classList.remove('portrait');
+    canvas.width = 800; canvas.height = 480;
+  }
+  const shown = pendingIndex !== null ? pendingIndex : currentIndex;
+  if(images[shown]?.orientation !== orient) {
+    const compatible = images.filter(img => img.orientation === orient);
+    if(compatible.length > 0) pendingIndex = images.indexOf(compatible[0]);
+  }
+  renderDisplay(pendingIndex !== null ? pendingIndex : currentIndex, false);
+  updateGallery();
+  updateCounter();
+}
+
+function setOrientation(orient) {
+  setOrientationSilent(orient);
+  showToast(orient === 'portrait' ? '↕ Hochformat' : '↔ Querformat');
+}
+
+function renderDisplay(imgIdx, animate=false) {
+  const img = images[imgIdx];
+  if(!img) return;
+
+  // Rahmen automatisch an die Orientierung des Bildes anpassen
+  updateFrameOrientation(img.orientation);
+
+  // BMP im Hintergrund laden falls noch nicht vorhanden
+  if (!img.previewCanvas) loadBmpPreview(img, imgIdx);
+  
+  if(animate) {
+    const overlay = document.getElementById('einkOverlay');
+    overlay.classList.add('show');
+    document.getElementById('statusText').textContent = 'Aktualisiert…';
+    setTimeout(() => {
+      drawToPreview(img);
+      overlay.classList.remove('show');
+      document.getElementById('statusText').textContent = 'Bereit';
+    }, 1200);
+  } else {
+    drawToPreview(img);
+  }
+  
+  updateCounter();
+}
+
+function drawToPreview(img) {
+  const canvas = document.getElementById('previewCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#F0EDE8';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (!img) return;
+
+  // Bevorzuge den geladenen BMP (volle Qualität + E-Ink-Farben),
+  // falle auf Thumbnail zurück solange der BMP noch lädt
+  const src = img.previewCanvas
+    || (img.thumbImg?.complete && img.thumbImg?.naturalWidth > 0 ? img.thumbImg : null);
+  if (!src) return;
+
+  const srcW = src.width  ?? src.naturalWidth;
+  const srcH = src.height ?? src.naturalHeight;
+  const sc = Math.min(canvas.width / srcW, canvas.height / srcH);
+  ctx.drawImage(src, (canvas.width - srcW * sc) / 2, (canvas.height - srcH * sc) / 2, srcW * sc, srcH * sc);
+}
+
+// ── SD CARD DISPLAY ───────────────────────────────────────────
+let sdFreeMb = 0, sdTotalMb = 0;
+
+function updateSdDisplay(freeMb, totalMb) {
+  if (freeMb !== undefined) { sdFreeMb = freeMb; sdTotalMb = totalMb; }
+  if (sdTotalMb === 0) return;
+
+  const usedMb  = sdTotalMb - sdFreeMb;
+  const pct     = Math.max(0.3, (usedMb / sdTotalMb) * 100);
+  const freeGb  = (sdFreeMb / 1024).toFixed(1);
+  const usedStr = usedMb < 1024 ? usedMb.toFixed(0) + ' MB' : (usedMb / 1024).toFixed(2) + ' GB';
+  const totalStr = sdTotalMb < 1024 ? sdTotalMb.toFixed(0) + ' MB' : (sdTotalMb / 1024).toFixed(0) + ' GB';
+
+  const sdFill = document.getElementById('sdFill');
+  if(sdFill) sdFill.style.width = pct + '%';
+  const sdFree = document.getElementById('sdFree');
+  if(sdFree) sdFree.textContent = freeGb + ' GB frei';
+
+  const sdUsedInfo = document.getElementById('sdUsedInfo');
+  if(sdUsedInfo) sdUsedInfo.textContent = `${usedStr} / ${totalStr}`;
+  const sdFreeInfo = document.getElementById('sdFreeInfo');
+  if(sdFreeInfo) sdFreeInfo.textContent = `${freeGb} GB frei`;
+  const sdBarSettings = document.getElementById('sdBarSettings');
+  if(sdBarSettings) sdBarSettings.style.width = pct + '%';
+}
+
+function updateCounter() {
+  const shown = pendingIndex !== null ? pendingIndex : currentIndex;
+  document.getElementById('imageCounter').textContent = `${shown+1} / ${images.length}`;
+  
+  // Apply button state
+  const applyBtn = document.getElementById('applyBtn');
+  if(pendingIndex !== null && pendingIndex !== currentIndex) {
+    applyBtn.classList.add('active');
+    document.getElementById('pendingBadge').classList.add('show');
+  } else {
+    applyBtn.classList.remove('active');
+    document.getElementById('pendingBadge').classList.remove('show');
+  }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function navImage(delta) {
+  if(images.length === 0) return;
+  const pool = getActivePool();
+  if(pool.length === 0) return;
+
+  const shuffle = document.getElementById('toggleShuffle')?.classList.contains('on');
+  let nextIdx;
+  if(shuffle) {
+    const base = pendingIndex !== null ? pendingIndex : currentIndex;
+    const candidates = pool.filter(i => i !== base);
+    nextIdx = candidates.length > 0
+      ? candidates[Math.floor(Math.random() * candidates.length)]
+      : pool[0];
+  } else {
+    const base    = pendingIndex !== null ? pendingIndex : currentIndex;
+    const poolPos = pool.indexOf(base);
+    const nextPos = ((poolPos < 0 ? 0 : poolPos) + delta + pool.length * 100) % pool.length;
+    nextIdx = pool[nextPos];
+  }
+
+  pendingIndex = nextIdx;
+  renderDisplay(pendingIndex, false);
+  updateGallery();
+  updateCounter();
+}
+
+async function applyImage() {
+  if(pendingIndex === null || pendingIndex === currentIndex) return;
+
+  const targetIdx = pendingIndex;
+  const imgName   = images[targetIdx].name;
+
+  const btn = document.getElementById('applyBtn');
+  btn.classList.remove('active');
+  btn.classList.add('loading');
+  showToast('Wird an Display gesendet…');  // sofortiges Feedback vor dem POST
+
+  try {
+    const res = await fetchWithTimeout(
+      `/api/display?name=${encodeURIComponent(imgName)}`,
+      { method: 'POST' },
+      10000
+    );
+
+    if (res.status === 503) {
+      showToast('Display ist noch beschäftigt – bitte kurz warten');
+      return;
+    }
+    if (!res.ok) {
+      showToast('Fehler: Display antwortet nicht');
+      return;
+    }
+
+    currentIndex = targetIdx;
+    pendingIndex = null;
+    renderDisplay(currentIndex, false);  // kein Animation-Overlay → statusText bleibt frei
+    updateGallery();
+    updateCounter();
+
+    // Status-Pill updaten und auf Display-Ende warten
+    pollUntilDisplayReady();
+
+  } catch(e) {
+    showToast('Verbindungsfehler zum ESP');
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+async function pollUntilDisplayReady() {
+  const dot  = document.querySelector('.status-dot');
+  const text = document.getElementById('statusText');
+  const origColor = dot.style.background;
+
+  dot.style.background  = '#f59e0b';   // orange = lädt
+  text.textContent      = 'Display lädt…';
+  showToast('Bild wird auf Display geladen…');
+
+  for (let i = 0; i < 45; i++) {       // max 90 s (45 × 2 s)
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const res = await fetchWithTimeout('/api/status', {}, 5000);
+      if (!res.ok) continue;
+      const d = await res.json();
+      updateBattery(d.battery_pct, d.battery_v);
+      updateSdDisplay(d.sd_free_mb, d.sd_total_mb);
+      if (!d.display_busy) break;
+    } catch(e) { /* kurz Verbindung weg – weiter versuchen */ }
+  }
+
+  dot.style.background = origColor;
+  text.textContent     = 'Bereit';
+  showToast('Display aktualisiert');
+}
+
+// ── PLAYLISTS ─────────────────────────────────────────────────
+function getActivePool() {
+  // Galerie-Anzeige folgt galleryPlaylistFilter (Stöbern), nicht activePlaylistId
+  let pool;
+  if(galleryPlaylistFilter === null) {
+    pool = images.map((_, i) => i);
+  } else {
+    const pl = playlists.find(p => p.id === galleryPlaylistFilter);
+    pool = pl ? images.map((img, i) => pl.imageIds.has(img.id) ? i : -1).filter(i => i >= 0) : [];
+  }
+  if(playOrientation !== 'all') {
+    pool = pool.filter(i => images[i]?.orientation === playOrientation);
+  }
+  return pool;
+}
+
+function renderPlaylistBar() {
+  const bar = document.getElementById('playlistBar');
+  bar.innerHTML = '';
+
+  // "Alle" chip
+  const allChip = document.createElement('button');
+  allChip.className = 'pl-chip' + (galleryPlaylistFilter === null ? ' active' : '');
+  allChip.innerHTML = `Alle <span class="pl-count">${images.length}</span>`;
+  allChip.onclick = () => { galleryPlaylistFilter = null; renderPlaylistBar(); updateGallery(); };
+  bar.appendChild(allChip);
+
+  // One chip per playlist
+  playlists.forEach(pl => {
+    const chip = document.createElement('button');
+    chip.className = 'pl-chip' + (galleryPlaylistFilter === pl.id ? ' active' : '');
+    chip.innerHTML = `${pl.name} <span class="pl-count">${pl.imageIds.size}</span>`;
+    chip.onclick = () => { galleryPlaylistFilter = pl.id; renderPlaylistBar(); updateGallery(); };
+    chip.ondblclick = (e) => { e.stopPropagation(); openPlModal(pl.id); };
+    chip.title = 'Doppelklick zum Bearbeiten';
+    bar.appendChild(chip);
+  });
+
+  // Edit button for active playlist (if not "Alle")
+  if(activePlaylistId !== null) {
+    const editBtn = document.createElement('button');
+    editBtn.className = 'pl-add-btn';
+    editBtn.title = 'Playlist bearbeiten';
+    editBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+    editBtn.style.borderStyle = 'solid';
+    editBtn.onclick = () => openPlModal(activePlaylistId);
+    bar.appendChild(editBtn);
+  }
+
+  // "New playlist" button
+  const addBtn = document.createElement('button');
+  addBtn.className = 'pl-add-btn';
+  addBtn.title = 'Neue Playlist erstellen';
+  addBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  addBtn.onclick = () => openPlModal(null);
+  bar.appendChild(addBtn);
+}
+
+// Modal open/close
+let plModalFilter = 'all';
+let plModalSelected = new Set(); // persists across filter switches
+
+function plSetFilter(f, btn) {
+  // Save current visible selections before switching
+  document.getElementById('plImgGrid').querySelectorAll('.pl-thumb-item.selected')
+    .forEach(el => plModalSelected.add(Number(el.dataset.imgId)));
+  document.getElementById('plImgGrid').querySelectorAll('.pl-thumb-item:not(.selected)')
+    .forEach(el => plModalSelected.delete(Number(el.dataset.imgId)));
+
+  plModalFilter = f;
+  document.querySelectorAll('#plFilterAll,#plFilterLand,#plFilterPort').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPlGrid();
+}
+
+function renderPlGrid() {
+  const grid = document.getElementById('plImgGrid');
+  grid.innerHTML = '';
+
+  const filtered = images.filter(img =>
+    plModalFilter === 'all' || img.orientation === plModalFilter
+  );
+
+  filtered.forEach(img => {
+    const isPortrait = img.orientation === 'portrait';
+    const item = document.createElement('div');
+    item.className = 'pl-thumb-item'
+      + (isPortrait ? ' portrait' : '')
+      + (plModalSelected.has(img.id) ? ' selected' : '');
+    item.dataset.imgId = img.id;
+    item.onclick = () => {
+      item.classList.toggle('selected');
+      if(item.classList.contains('selected')) plModalSelected.add(img.id);
+      else plModalSelected.delete(img.id);
+      document.getElementById('plSelectedCount').textContent = `${plModalSelected.size} ausgewählt`;
+    };
+
+    const thumb = document.createElement('img');
+    thumb.src = `/thumbnails/${img.name.replace('.bmp', '.jpg')}?v=${img.version}`;
+    thumb.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:6px;';
+    item.appendChild(thumb);
+
+    const badge = document.createElement('div');
+    badge.className = 'orient-badge';
+    badge.innerHTML = isPortrait
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="9" height="9"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>Hoch`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="9" height="9"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>Quer`;
+    item.appendChild(badge);
+
+    const label = document.createElement('div');
+    label.className = 'pl-thumb-name';
+    label.textContent = img.name;
+    item.appendChild(label);
+
+    grid.appendChild(item);
+  });
+
+  document.getElementById('plSelectedCount').textContent = `${plModalSelected.size} ausgewählt`;
+}
+
+function openPlModal(plId) {
+  editingPlaylistId = plId;
+  plModalFilter = 'all';
+  const pl = plId !== null ? playlists.find(p => p.id === plId) : null;
+
+  // Init selection from existing playlist
+  plModalSelected = new Set(pl ? [...pl.imageIds] : []);
+
+  document.getElementById('plModalTitle').textContent = pl ? 'Playlist bearbeiten' : 'Neue Playlist';
+  document.getElementById('plNameInput').value = pl ? pl.name : '';
+  document.getElementById('plDeleteBtn').style.display = pl ? '' : 'none';
+
+  document.querySelectorAll('#plFilterAll,#plFilterLand,#plFilterPort').forEach(b => b.classList.remove('active'));
+  document.getElementById('plFilterAll').classList.add('active');
+
+  renderPlGrid();
+  document.getElementById('playlistModal').classList.add('show');
+}
+
+function closePlModal() {
+  document.getElementById('playlistModal').classList.remove('show');
+  editingPlaylistId = null;
+}
+
+function savePlModal() {
+  const name = document.getElementById('plNameInput').value.trim();
+  if(!name) { document.getElementById('plNameInput').focus(); return; }
+
+  if(editingPlaylistId !== null) {
+    const pl = playlists.find(p => p.id === editingPlaylistId);
+    if(pl) { pl.name = name; pl.imageIds = new Set(plModalSelected); }
+  } else {
+    playlists.push({ id: Date.now(), name, imageIds: new Set(plModalSelected) });
+  }
+
+  const wasEditing = editingPlaylistId;
+  closePlModal();
+  renderPlaylistBar();
+  renderActivePlSelector();
+  updateGallery();
+  pushPlaylistsToESP();
+  showToast(wasEditing ? `✓ "${name}" aktualisiert` : `✓ Playlist "${name}" erstellt`);
+}
+
+function deletePlaylist() {
+  const pl = playlists.find(p => p.id === editingPlaylistId);
+  if(!pl) return;
+  playlists = playlists.filter(p => p.id !== editingPlaylistId);
+  if(activePlaylistId === editingPlaylistId)     activePlaylistId = null;
+  if(galleryPlaylistFilter === editingPlaylistId) galleryPlaylistFilter = null;
+  closePlModal();
+  renderPlaylistBar();
+  renderActivePlSelector();
+  updateGallery();
+  pushPlaylistsToESP();
+  showToast(`🗑 "${pl.name}" gelöscht`);
+}
+
+// ── PLAYLIST ↔ ESP SYNC ───────────────────────────────────────
+
+// Playlists vom ESP laden (nach fetchImages, damit image.name bekannt ist)
+async function fetchPlaylists() {
+  try {
+    const res = await fetchWithTimeout('/api/playlists', {}, 5000);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    // active ID wiederherstellen
+    activePlaylistId = data.active ?? null;
+
+    // Playlist-Objekte aufbauen — image names → IDs
+    playlists = (data.playlists || []).map(pl => ({
+      id:       pl.id,
+      name:     pl.name,
+      imageIds: new Set(
+        (pl.images || [])
+          .map(name => images.find(img => img.name === name))
+          .filter(Boolean)
+          .map(img => img.id)
+      )
+    }));
+
+    renderPlaylistBar();
+    renderActivePlSelector();
+    updateGallery();
+  } catch(e) { /* SD noch nicht bereit o.ä. – still ignorieren */ }
+}
+
+// Aktuellen Playlist-State zum ESP schicken
+async function pushPlaylistsToESP() {
+  const payload = {
+    active:    activePlaylistId,
+    playlists: playlists.map(pl => ({
+      id:     pl.id,
+      name:   pl.name,
+      images: [...pl.imageIds]
+        .map(id => images.find(img => img.id === id))
+        .filter(Boolean)
+        .map(img => img.name)
+    }))
+  };
+  try {
+    await fetchWithTimeout('/api/playlists', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload, null, 2)
+    }, 10000);
+  } catch(e) { showToast('Playlist-Sync fehlgeschlagen'); }
+}
+
+// Dropdown "Aktive Playlist" aktualisieren
+function renderActivePlSelector() {
+  const sel = document.getElementById('activePlSelect');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Alle Bilder</option>';
+  playlists.forEach(pl => {
+    const opt = document.createElement('option');
+    opt.value = pl.id;
+    opt.textContent = pl.name;
+    sel.appendChild(opt);
+  });
+  // Auswahl wiederherstellen
+  sel.value = (activePlaylistId !== null && activePlaylistId !== undefined)
+    ? String(activePlaylistId) : '';
+}
+
+function setActivePl(id) {
+  activePlaylistId = id === '' ? null : (isNaN(id) ? id : Number(id));
+  // Chips bleiben unverändert (zeigen Galerie-Filter, nicht aktive Playlist)
+  pushPlaylistsToESP();
+  showToast(id === '' ? 'Alle Bilder aktiv' : `Playlist aktiv: ${playlists.find(p=>p.id==activePlaylistId)?.name}`);
+}
+
+document.getElementById('playlistModal').addEventListener('click', function(e) {
+  if(e.target === this) closePlModal();
+});
+
+// ── SETTINGS ─────────────────────────────────────────────────
+function setImgPerDay(n, btn) {
+  imgPerDay = n;
+  document.querySelectorAll('#imgPerDay .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateSchedule();
+  showToast(`Bildwechsel: ${n}× täglich`);
+}
+
+function updateSchedule() {
+  const timeVal = document.getElementById('startTime').value || '02:00';
+  const [h] = timeVal.split(':').map(Number);
+  const interval = 24 / imgPerDay;
+  const times = [];
+  for(let i = 0; i < imgPerDay; i++) {
+    const t = (h + i * interval) % 24;
+    times.push(`${String(Math.floor(t)).padStart(2,'0')}:00`);
+  }
+
+  const desc = times.length <= 4
+    ? `Wechsel um ${times.join(', ')} Uhr`
+    : `${imgPerDay}× täglich ab ${times[0]} Uhr`;
+  document.getElementById('scheduleDesc').textContent = desc;
+
+  // Find the next upcoming wakeup relative to current time
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const timeMins = times.map(t => parseInt(t) * 60);
+  const next = timeMins.find(m => m > nowMins) ?? timeMins[0]; // wrap to next day
+  const nextStr = `${String(Math.floor(next / 60)).padStart(2,'0')}:00`;
+
+  document.getElementById('nextWakeup').textContent = nextStr + ' Uhr';
+  document.getElementById('nextRefresh').innerHTML =
+    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Nächster Wechsel: ${nextStr} Uhr`;
+}
+
+let playOrientation = 'all'; // 'all' | 'landscape' | 'portrait'
+
+function setPlayOrientation(orient, btn) {
+  playOrientation = orient;
+  document.querySelectorAll('#playOrientSeg .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const descs = {
+    all:       'Alle Bilder werden abgespielt',
+    landscape: 'Nur Querformat-Bilder werden abgespielt',
+    portrait:  'Nur Hochformat-Bilder werden abgespielt',
+  };
+  document.getElementById('playOrientDesc').textContent = descs[orient];
+
+  // Auto-switch display preview orientation (suppress its own toast)
+  if(orient !== 'all') {
+    setOrientationSilent(orient);
+  }
+
+  // Sync gallery filter tabs
+  galleryFilter = orient;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const filterMap = { all: 0, landscape: 1, portrait: 2 };
+  if(filterBtns[filterMap[orient]]) filterBtns[filterMap[orient]].classList.add('active');
+
+  // If current image doesn't match, jump to first compatible
+  if(orient !== 'all') {
+    const compatible = images.filter(img => img.orientation === orient);
+    if(compatible.length > 0) {
+      const newIdx = images.indexOf(compatible[0]);
+      pendingIndex = newIdx;
+      renderDisplay(newIdx, false);
+      updateCounter();
+    }
+  }
+
+  updateGallery();
+  showToast(descs[orient]);
+}
+
+function toggleSwitch(btn) {
+  btn.classList.toggle('on');
+  const on = btn.classList.contains('on');
+  showToast(on ? '🔀 Zufallsmodus aktiv' : '📋 Reihenfolge sequenziell');
+}
+
+function onDitherChange(val) { /* unused - kept for safety */ }
+function setGalleryFilter(filter, btn) {
+  galleryFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateGallery();
+}
+function updateCropPreview() { drawCropCanvas(); }
+function setUploadOrientation(orient, btn) {
+  document.getElementById('upOrientLand').classList.toggle('active', orient === 'landscape');
+  document.getElementById('upOrientPort').classList.toggle('active', orient === 'portrait');
+  if(cropMode === 'auto' && baseCanvas) applyAutoCrop();
+  drawCropCanvas();
+}
+
+// ── GALLERY ───────────────────────────────────────────────────
+let dragSrcIndex = null;
+
+function updateGallery() {
+  const grid = document.getElementById('galleryGrid');
+
+  if(images.length === 0) {
+    grid.innerHTML = '<div class="gallery-empty">Keine Bilder auf der SD-Karte</div>';
+    document.getElementById('sdCount').textContent = '0 Bilder';
+    document.getElementById('galleryCount').textContent = '0 Bilder';
+    updateSdDisplay();
+    return;
+  }
+
+  const activePl = activePlaylistId !== null ? playlists.find(p => p.id === activePlaylistId) : null;
+
+  const filtered = images
+    .map((img, realIdx) => ({ img, realIdx }))
+    .filter(({ img }) => {
+      if(activePl && !activePl.imageIds.has(img.id)) return false;
+      if(galleryFilter !== 'all' && img.orientation !== galleryFilter) return false;
+      return true;
+    });
+
+  const plLabel = activePl ? `${activePl.name} · ` : '';
+  document.getElementById('sdCount').textContent = `${images.length} Bilder`;
+  document.getElementById('galleryCount').textContent =
+    filtered.length === images.length ? `${images.length} Bilder`
+    : `${plLabel}${filtered.length} / ${images.length}`;
+  updateSdDisplay();
+  grid.innerHTML = '';
+
+  if(filtered.length === 0) {
+    grid.innerHTML = `<div class="gallery-empty">Keine ${galleryFilter === 'landscape' ? 'Quer-' : 'Hoch-'}format-Bilder</div>`;
+    return;
+  }
+
+  filtered.forEach(({ img, realIdx }) => {
+    const isActive  = realIdx === currentIndex;
+    const isPending = pendingIndex !== null && realIdx === pendingIndex && pendingIndex !== currentIndex;
+    const isPortrait = img.orientation === 'portrait';
+
+    const item = document.createElement('div');
+    item.className = 'gallery-item'
+      + (isPortrait  ? ' portrait'      : '')
+      + (isActive    ? ' active-frame'  : '')
+      + (isPending   ? ' pending-frame' : '');
+    item.setAttribute('draggable', 'true');
+    item.dataset.realIdx = realIdx;
+
+    // ── Drag & Drop (always use realIdx from dataset to survive re-renders) ──
+    item.addEventListener('dragstart', e => {
+      dragSrcIndex = parseInt(item.dataset.realIdx);
+      setTimeout(() => item.classList.add('dragging'), 0);
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragSrcIndex);
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      document.querySelectorAll('.gallery-item').forEach(el => el.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const src = dragSrcIndex;
+      const dst = parseInt(item.dataset.realIdx);
+      document.querySelectorAll('.gallery-item').forEach(el => el.classList.remove('drag-over'));
+      if(src !== dst) item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      const src = dragSrcIndex;
+      const dst = parseInt(item.dataset.realIdx);
+      if(src === null || src === dst) return;
+
+      // Perform the reorder
+      const moved = images.splice(src, 1)[0];
+      images.splice(dst, 0, moved);
+
+      // Update tracked indices
+      currentIndex = remapIndex(currentIndex, src, dst);
+      if(pendingIndex !== null) pendingIndex = remapIndex(pendingIndex, src, dst);
+
+      dragSrcIndex = null;
+      updateGallery();
+      updateCounter();
+      showToast('↕ Reihenfolge aktualisiert');
+    });
+
+    // Thumbnail aus /thumbnails/ laden (mit Cache-Buster)
+    const thumb = document.createElement('img');
+    thumb.className = 'gallery-thumb';
+    thumb.src = `/thumbnails/${img.name.replace('.bmp', '.jpg')}?v=${img.version}`;
+    thumb.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+    item.appendChild(thumb);
+
+    // Badges
+    if(isActive && !isPending) {
+      const b = document.createElement('div'); b.className = 'active-badge'; b.textContent = 'AKTIV';
+      item.appendChild(b);
+    } else if(isPending) {
+      const b = document.createElement('div'); b.className = 'pending-badge-g'; b.textContent = 'VORSCHAU';
+      item.appendChild(b);
+    }
+
+    // Orientation badge
+    const obadge = document.createElement('div');
+    obadge.className = 'orient-badge';
+    obadge.innerHTML = isPortrait
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="9" height="9"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>Hoch`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="9" height="9"><rect x="2" y="5" width="20" height="14" rx="2"/></svg>Quer`;
+    item.appendChild(obadge);
+
+    const label = document.createElement('div');
+    label.className = 'gallery-label'; label.textContent = img.name;
+    item.appendChild(label);
+
+    // Hover overlay — eye + gear (settings replaces delete)
+    const overlay = document.createElement('div');
+    overlay.className = 'gallery-item-overlay';
+    overlay.innerHTML = `
+      <button class="gallery-action-btn" onclick="selectImage(${realIdx})" title="Vorschau">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+      <button class="gallery-action-btn" onclick="openImgSettings(${realIdx})" title="Einstellungen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    `;
+    item.appendChild(overlay);
+    grid.appendChild(item);
+  });
+}
+
+function remapIndex(idx, src, dst) {
+  if(idx === src) return dst;
+  if(src < dst) {
+    if(idx > src && idx <= dst) return idx - 1;
+  } else {
+    if(idx >= dst && idx < src) return idx + 1;
+  }
+  return idx;
+}
+
+function selectImage(i) {
+  pendingIndex = i;
+  const img = images[i];
+  if(img && img.orientation !== orientation) {
+    setOrientation(img.orientation);
+  } else {
+    renderDisplay(i, false);
+    updateGallery();
+    updateCounter();
+  }
+}
+
+// ── IMAGE SETTINGS MODAL ──────────────────────────────────────
+let imgSettingsTarget = null;
+
+function openImgSettings(i) {
+  imgSettingsTarget = i;
+  const img = images[i];
+  document.getElementById('imgSettingsName').textContent = img.name;
+  const isPortrait = img.orientation === 'portrait';
+  const tc = document.getElementById('imgSettingsThumb');
+  tc.width  = isPortrait ? 45 : 120;
+  tc.height = isPortrait ? 120 : 72;
+  if (img.thumbImg && img.thumbImg.complete && img.thumbImg.naturalWidth > 0) {
+    tc.getContext('2d').drawImage(img.thumbImg, 0, 0, tc.width, tc.height);
+  }
+  document.getElementById('imgSettingsLand').classList.toggle('active', img.orientation === 'landscape');
+  document.getElementById('imgSettingsPort').classList.toggle('active', img.orientation === 'portrait');
+  document.getElementById('imgSettingsModal').classList.add('show');
+}
+
+function closeImgSettings() {
+  document.getElementById('imgSettingsModal').classList.remove('show');
+  imgSettingsTarget = null;
+}
+
+function setImgSettingsOrient(orient) {
+  if(imgSettingsTarget === null) return;
+  images[imgSettingsTarget].orientation = orient;
+  document.getElementById('imgSettingsLand').classList.toggle('active', orient === 'landscape');
+  document.getElementById('imgSettingsPort').classList.toggle('active', orient === 'portrait');
+  updateGallery();
+  showToast(`Format geändert: ${orient === 'portrait' ? 'Hochformat' : 'Querformat'}`);
+}
+
+function openDeleteFromSettings() {
+  const i = imgSettingsTarget;
+  closeImgSettings();
+  setTimeout(() => openDeleteModal(i), 200);
+}
+
+document.getElementById('imgSettingsModal').addEventListener('click', function(e) {
+  if(e.target === this) closeImgSettings();
+});
+
+// ── CROP / UPLOAD ─────────────────────────────────────────────
+// Architecture:
+//   baseCanvas  — offscreen, contains ONLY the rotated+scaled photo (no overlays, no filter)
+//   cropCanvas  — display canvas: baseCanvas copy + optional eink preview + guide + crop handles
+//   cropBox     — {x1,y1,x2,y2} always in baseCanvas pixel coordinates
+//   doUpload()  — reads from baseCanvas directly, never from cropCanvas
+
+let cropImage   = null;   // original Image element
+let rotation    = 0;      // 0 | 90 | 180 | 270
+let baseCanvas  = null;   // offscreen canvas with rotated image
+let cropBox     = null;   // {x1,y1,x2,y2} in baseCanvas pixels
+let cropMode    = 'auto'; // 'auto' | 'manual'
+
+// Drag state
+const HANDLE_RADIUS = 14;  // CSS px hit area for corner handles
+let dragMode    = null;    // null | 'new' | 'tl'|'tr'|'bl'|'br'|'body'
+let dragOrigin  = null;    // {x,y} canvas-px where drag started
+let boxAtDrag   = null;    // snapshot of cropBox at drag start
+
+// ── Helper: CSS pos → full-res baseCanvas px ─────────────────
+function cssToCanvas(cssX, cssY) {
+  const c = document.getElementById('cropCanvas');
+  const r = c.getBoundingClientRect();
+  // CSS px → canvas px → full-res px
+  return {
+    x: (cssX - r.left) * (c.width  / r.width)  / displayScale,
+    y: (cssY - r.top)  * (c.height / r.height) / displayScale,
+  };
+}
+
+// ── Helper: clamp cropBox inside full-res canvas bounds ───────
+function clampBox(b, W, H) {
+  return {
+    x1: Math.max(0, Math.min(b.x1, W)),
+    y1: Math.max(0, Math.min(b.y1, H)),
+    x2: Math.max(0, Math.min(b.x2, W)),
+    y2: Math.max(0, Math.min(b.y2, H)),
+  };
+}
+
+// ── Handle positions (full-res px) ───────────────────────────
+function handlePositions(b) {
+  return {
+    tl: { x: b.x1, y: b.y1 },
+    tr: { x: b.x2, y: b.y1 },
+    bl: { x: b.x1, y: b.y2 },
+    br: { x: b.x2, y: b.y2 },
+  };
+}
+
+function hitHandle(fullPx, fullPy) {
+  if(!cropBox) return null;
+  // Hit radius in full-res px = HANDLE_RADIUS CSS px / displayScale
+  const hr = HANDLE_RADIUS / displayScale;
+  const handles = handlePositions(cropBox);
+  for(const [name, pos] of Object.entries(handles)) {
+    const dx = fullPx - pos.x, dy = fullPy - pos.y;
+    if(Math.sqrt(dx*dx + dy*dy) <= hr) return name;
+  }
+  const { x1,y1,x2,y2 } = cropBox;
+  if(fullPx > x1 && fullPx < x2 && fullPy > y1 && fullPy < y2) return 'body';
+  return null;
+}
+
+// ── Crop mode ─────────────────────────────────────────────────
+function setCropMode(mode) {
+  cropMode = mode;
+  document.getElementById('cropModeAuto').classList.toggle('active',   mode === 'auto');
+  document.getElementById('cropModeManual').classList.toggle('active', mode === 'manual');
+  if(mode === 'auto' && baseCanvas) applyAutoCrop();
+  drawCropCanvas();
+}
+
+// Compute a centered crop box that maximally fits the target AR inside baseCanvas
+function applyAutoCrop() {
+  if(!baseCanvas) return;
+  const W  = baseCanvas.width, H = baseCanvas.height;
+  const upPort = document.getElementById('upOrientPort')?.classList.contains('active');
+  const ar = upPort ? 480/800 : 800/480;   // target width/height ratio
+  let cw, ch;
+  if(W / H > ar) { ch = H; cw = ch * ar; }   // canvas is wider → fit height
+  else            { cw = W; ch = cw / ar; }   // canvas is taller → fit width
+  const x1 = (W - cw) / 2, y1 = (H - ch) / 2;
+  cropBox = { x1, y1, x2: x1 + cw, y2: y1 + ch };
+}
+
+// ── Load file ─────────────────────────────────────────────────
+function handleFile(file) {
+  if(!file) return;
+  rotation = 0; cropBox = null; dragMode = null;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      cropImage = img;
+      // Show section FIRST so clientWidth is measurable
+      document.getElementById('dropZoneWrap').style.display = 'none';
+      document.getElementById('cropSection').classList.add('show');
+      rebuildBaseCanvas();
+      if(cropMode === 'auto') applyAutoCrop();
+      else cropBox = { x1: 0, y1: 0, x2: baseCanvas.width, y2: baseCanvas.height };
+      drawCropCanvas();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Build offscreen base canvas at FULL original resolution ───
+let displayScale = 1; // baseCanvas px × displayScale = cropCanvas px
+
+function rebuildBaseCanvas() {
+  if(!cropImage) return;
+  // Full-res rotated dimensions
+  const W = rotation % 180 === 0 ? cropImage.width  : cropImage.height;
+  const H = rotation % 180 === 0 ? cropImage.height : cropImage.width;
+
+  baseCanvas = document.createElement('canvas');
+  baseCanvas.width  = W;
+  baseCanvas.height = H;
+  const ctx = baseCanvas.getContext('2d');
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(rotation * Math.PI / 180);
+  ctx.drawImage(cropImage, -cropImage.width / 2, -cropImage.height / 2);
+  ctx.restore();
+
+  // Compute how much we need to shrink for the display canvas
+  const wrap = document.getElementById('cropWrap');
+  const maxW = Math.max(wrap.parentElement.clientWidth, 200);
+  const maxH = 520;
+  displayScale = Math.min(maxW / W, maxH / H, 1);
+}
+
+// ── Draw everything onto the visible cropCanvas ───────────────
+function drawCropCanvas() {
+  if(!baseCanvas) return;
+  const canvas = document.getElementById('cropCanvas');
+  const dW = Math.round(baseCanvas.width  * displayScale);
+  const dH = Math.round(baseCanvas.height * displayScale);
+  canvas.width  = dW;
+  canvas.height = dH;
+  const ctx = canvas.getContext('2d');
+
+  // 1. Draw base image downscaled to display size
+  ctx.drawImage(baseCanvas, 0, 0, dW, dH);
+
+  // 2. Optional E-ink preview (only on display canvas, never corrupts baseCanvas)
+  const filterOn = document.getElementById('uploadToggleFilter')?.classList.contains('on');
+  if(filterOn) {
+    const ditherOn = document.getElementById('uploadToggleDither')?.classList.contains('on') ?? true;
+    const str      = Number(document.getElementById('uploadDitherStrength')?.value ?? 100) / 100;
+    applyEinkPalette(ctx, dW, dH, str, ditherOn);
+  }
+
+  // 3. Aspect-ratio guide (in display px)
+  const upPort = document.getElementById('upOrientPort')?.classList.contains('active');
+  const ar = upPort ? 480/800 : 800/480;
+  let gW, gH;
+  if(dW/dH > ar) { gH = dH; gW = gH * ar; } else { gW = dW; gH = gW / ar; }
+  const gx = (dW - gW)/2, gy = (dH - gH)/2;
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 1; ctx.setLineDash([6,4]);
+  ctx.strokeRect(gx, gy, gW, gH);
+  ctx.setLineDash([]);
+
+  // 4. Crop overlay + handles — all in DISPLAY px (cropBox * displayScale)
+  if(cropBox) {
+    const x1 = cropBox.x1 * displayScale, y1 = cropBox.y1 * displayScale;
+    const x2 = cropBox.x2 * displayScale, y2 = cropBox.y2 * displayScale;
+    const bw = x2 - x1, bh = y2 - y1;
+
+    // Dark overlay outside crop
+    ctx.fillStyle = 'rgba(0,0,0,0.52)';
+    ctx.fillRect(0, 0, dW, y1);
+    ctx.fillRect(0, y2, dW, dH - y2);
+    ctx.fillRect(0, y1, x1, bh);
+    ctx.fillRect(x2, y1, dW - x2, bh);
+
+    // Crop border
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1.5; ctx.setLineDash([]);
+    ctx.strokeRect(x1, y1, bw, bh);
+
+    // Rule-of-thirds grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1;
+    for(let i=1; i<3; i++) {
+      ctx.beginPath(); ctx.moveTo(x1 + bw*i/3, y1); ctx.lineTo(x1 + bw*i/3, y2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x1, y1 + bh*i/3); ctx.lineTo(x2, y1 + bh*i/3); ctx.stroke();
+    }
+
+    // Corner handles
+    [[x1,y1],[x2,y1],[x1,y2],[x2,y2]].forEach(([hx,hy]) => {
+      ctx.beginPath(); ctx.arc(hx, hy, 7, 0, Math.PI*2);
+      ctx.fillStyle = 'white'; ctx.fill();
+      ctx.strokeStyle = 'rgba(0,113,227,0.9)'; ctx.lineWidth = 2; ctx.stroke();
+    });
+
+    // Edge midpoint handles
+    [[(x1+x2)/2,y1],[(x1+x2)/2,y2],[x1,(y1+y2)/2],[x2,(y1+y2)/2]].forEach(([hx,hy]) => {
+      ctx.beginPath(); ctx.arc(hx, hy, 4, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fill();
+      ctx.strokeStyle = 'rgba(0,113,227,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+
+    // Dimension label
+    const rW = Math.round(cropBox.x2 - cropBox.x1);
+    const rH = Math.round(cropBox.y2 - cropBox.y1);
+    const info = cropMode === 'auto' ? `Auto · ${rW} × ${rH}` : `${rW} × ${rH}`;
+    const tx = x1 + bw/2, ty = y2 + 18;
+    ctx.font = '600 12px DM Sans, sans-serif';
+    const tw = ctx.measureText(info).width + 14;
+    ctx.fillStyle = cropMode === 'auto' ? 'rgba(0,113,227,0.8)' : 'rgba(0,0,0,0.65)';
+    ctx.beginPath(); ctx.roundRect(tx - tw/2, ty - 11, tw, 20, 4); ctx.fill();
+    ctx.fillStyle = 'white'; ctx.textAlign = 'center';
+    ctx.fillText(info, tx, ty + 3);
+    ctx.textAlign = 'left';
+
+    if(cropMode === 'auto') document.getElementById('cropCanvas').style.cursor = 'default';
+  }
+}
+
+// ── Pointer event helpers ─────────────────────────────────────
+function onPointerDown(cssX, cssY) {
+  if(!baseCanvas || cropMode === 'auto') return;
+  const p = cssToCanvas(cssX, cssY);
+  const hit = hitHandle(p.x, p.y);
+  dragOrigin = p;
+  boxAtDrag  = cropBox ? { ...cropBox } : null;
+
+  if(hit && cropBox) {
+    dragMode = hit;
+  } else {
+    // Start a new crop box
+    dragMode = 'new';
+    cropBox  = { x1: p.x, y1: p.y, x2: p.x, y2: p.y };
+  }
+}
+
+function onPointerMove(cssX, cssY) {
+  if(!dragMode || !baseCanvas) return;
+  const p   = cssToCanvas(cssX, cssY);
+  const W   = baseCanvas.width, H = baseCanvas.height;  // full-res bounds
+  const dx  = p.x - dragOrigin.x, dy = p.y - dragOrigin.y;
+
+  let b = { ...cropBox };
+
+  if(dragMode === 'new') {
+    b = { x1: dragOrigin.x, y1: dragOrigin.y, x2: p.x, y2: p.y };
+    cropBox = clampBox({ x1: Math.min(b.x1,b.x2), y1: Math.min(b.y1,b.y2),
+                         x2: Math.max(b.x1,b.x2), y2: Math.max(b.y1,b.y2) }, W, H);
+  } else if(dragMode === 'body') {
+    const w = boxAtDrag.x2 - boxAtDrag.x1, h = boxAtDrag.y2 - boxAtDrag.y1;
+    let nx1 = boxAtDrag.x1 + dx, ny1 = boxAtDrag.y1 + dy;
+    nx1 = Math.max(0, Math.min(nx1, W - w));
+    ny1 = Math.max(0, Math.min(ny1, H - h));
+    cropBox = { x1: nx1, y1: ny1, x2: nx1 + w, y2: ny1 + h };
+  } else {
+    if(dragMode === 'tl') { b.x1 = p.x; b.y1 = p.y; }
+    if(dragMode === 'tr') { b.x2 = p.x; b.y1 = p.y; }
+    if(dragMode === 'bl') { b.x1 = p.x; b.y2 = p.y; }
+    if(dragMode === 'br') { b.x2 = p.x; b.y2 = p.y; }
+    cropBox = clampBox({ x1: Math.min(b.x1,b.x2), y1: Math.min(b.y1,b.y2),
+                         x2: Math.max(b.x1,b.x2), y2: Math.max(b.y1,b.y2) }, W, H);
+    if(dragMode==='tl'&&b.x1>b.x2) dragMode='tr'; else if(dragMode==='tr'&&b.x2<b.x1) dragMode='tl';
+    if(dragMode==='bl'&&b.x1>b.x2) dragMode='br'; else if(dragMode==='br'&&b.x2<b.x1) dragMode='bl';
+  }
+
+  const c = document.getElementById('cropCanvas');
+  const hit = hitHandle(p.x, p.y);
+  c.style.cursor = hit === 'body' ? 'move'
+    : (hit === 'tl'||hit === 'br') ? 'nwse-resize'
+    : (hit === 'tr'||hit === 'bl') ? 'nesw-resize'
+    : 'crosshair';
+
+  drawCropCanvas();
+}
+
+function onPointerUp() {
+  // Ensure minimum crop size
+  if(cropBox && (cropBox.x2 - cropBox.x1 < 5 || cropBox.y2 - cropBox.y1 < 5)) {
+    cropBox = { x1: 0, y1: 0, x2: baseCanvas.width, y2: baseCanvas.height };
+  }
+  dragMode = null; dragOrigin = null; boxAtDrag = null;
+  drawCropCanvas();
+}
+
+// Attach events after DOM ready
+(function attachCropEvents() {
+  const canvas = document.getElementById('cropCanvas');
+
+  // Mouse
+  canvas.addEventListener('mousedown', e => { e.preventDefault(); onPointerDown(e.clientX, e.clientY); });
+  window.addEventListener('mousemove',  e => { if(dragMode) onPointerMove(e.clientX, e.clientY); });
+  window.addEventListener('mouseup',    ()  => { if(dragMode) onPointerUp(); });
+
+  // Touch
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    onPointerDown(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if(dragMode) onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: false });
+  canvas.addEventListener('touchend', e => { e.preventDefault(); if(dragMode) onPointerUp(); }, { passive: false });
+
+  // Cursor on hover (no drag)
+  canvas.addEventListener('mousemove', e => {
+    if(dragMode || !cropBox) return;
+    const p = cssToCanvas(e.clientX, e.clientY);
+    const hit = hitHandle(p.x, p.y);
+    canvas.style.cursor = hit === 'body' ? 'move'
+      : (hit==='tl'||hit==='br') ? 'nwse-resize'
+      : (hit==='tr'||hit==='bl') ? 'nesw-resize'
+      : cropBox ? 'crosshair' : 'crosshair';
+  });
+})();
+
+function rotateCrop(deg) {
+  rotation = (rotation + deg + 360) % 360;
+  rebuildBaseCanvas();
+  if(cropMode === 'auto') applyAutoCrop();
+  else cropBox = { x1: 0, y1: 0, x2: baseCanvas.width, y2: baseCanvas.height };
+  drawCropCanvas();
+}
+
+function resetCrop() {
+  rotation = 0;
+  rebuildBaseCanvas();
+  if(cropMode === 'auto') applyAutoCrop();
+  else cropBox = { x1: 0, y1: 0, x2: baseCanvas.width, y2: baseCanvas.height };
+  drawCropCanvas();
+}
+
+function cancelUpload() {
+  cropImage = null; baseCanvas = null; rotation = 0; cropBox = null; dragMode = null;
+  document.getElementById('cropSection').classList.remove('show');
+  document.getElementById('dropZoneWrap').style.display = '';
+  document.getElementById('fileInput').value = '';
+}
+
+async function doUpload() {
+  if(!baseCanvas || !cropBox) return;
+  const upPort       = document.getElementById('upOrientPort').classList.contains('active');
+  const uploadOrient = upPort ? 'portrait' : 'landscape';
+  const outW         = upPort ? 480 : 800;
+  const outH         = upPort ? 800 : 480;
+
+  // Read crop region directly from baseCanvas (pure image, zero UI contamination)
+  const { x1, y1, x2, y2 } = cropBox;
+  const cropW = Math.round(x2 - x1);
+  const cropH = Math.round(y2 - y1);
+
+  const out  = document.createElement('canvas');
+  out.width  = outW; out.height = outH;
+  const octx = out.getContext('2d');
+  octx.fillStyle = '#F0EDE8';
+  octx.fillRect(0, 0, outW, outH);
+
+  // Fit cropped region into output, letterboxed
+  const sc = Math.min(outW / cropW, outH / cropH);
+  const dw = cropW * sc, dh = cropH * sc;
+  octx.drawImage(baseCanvas,
+    Math.round(x1), Math.round(y1), cropW, cropH,
+    (outW - dw) / 2, (outH - dh) / 2, dw, dh
+  );
+
+  // Apply E-ink filter (reads from and writes to `out` only)
+  const filterOn  = document.getElementById('uploadToggleFilter').classList.contains('on');
+  const ditherOn  = document.getElementById('uploadToggleDither').classList.contains('on');
+  const ditherStr = Number(document.getElementById('uploadDitherStrength').value) / 100;
+  if(filterOn) applyEinkPalette(octx, outW, outH, ditherStr, ditherOn);
+
+  // Thumbnail-Canvas erstellen (ohne E-Ink-Filter, direkt aus Crop)
+  const tw = upPort ? 240 : 400;
+  const th = upPort ? 400 : 240;
+  const thumbCanvas = document.createElement('canvas');
+  thumbCanvas.width = tw; thumbCanvas.height = th;
+  const tctx = thumbCanvas.getContext('2d');
+  tctx.fillStyle = '#F0EDE8';
+  tctx.fillRect(0, 0, tw, th);
+  const tsc = Math.min(tw / cropW, th / cropH);
+  const tdw = cropW * tsc, tdh = cropH * tsc;
+  tctx.drawImage(baseCanvas, Math.round(x1), Math.round(y1), cropW, cropH,
+    (tw - tdw) / 2, (th - tdh) / 2, tdw, tdh);
+
+  // Progress anzeigen
+  document.getElementById('cropSection').classList.remove('show');
+  const prog  = document.getElementById('uploadProgress');
+  const fill  = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  prog.classList.add('show');
+
+  try {
+    // Schritt 1: BMP konvertieren
+    label.textContent = 'Konvertiere zu BMP…';
+    fill.style.width = '20%';
+    const bmpBuffer = canvasToBmp(out);
+
+    // Schritt 2: BMP hochladen
+    label.textContent = 'Lade Bild hoch…';
+    fill.style.width = '40%';
+    const res = await fetchWithTimeout('/api/upload/image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/bmp' },
+      body: bmpBuffer,
+    }, 30000); // 30s Timeout für ~1 MB
+    if (!res.ok) throw new Error('BMP-Upload fehlgeschlagen');
+    const { name } = await res.json(); // z.B. "001"
+
+    // Schritt 3: Thumbnail hochladen
+    label.textContent = 'Lade Vorschau hoch…';
+    fill.style.width = '70%';
+    const thumbBlob = await new Promise(resolve =>
+      thumbCanvas.toBlob(resolve, 'image/jpeg', 0.85)
+    );
+    await fetchWithTimeout(`/api/upload/thumb?name=${name}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/jpeg' },
+      body: thumbBlob,
+    });
+
+    fill.style.width = '100%';
+    label.textContent = 'Fertig!';
+
+    // Thumbnail vorladen bevor es zur Gallery hinzugefügt wird
+    const thumbImg = new Image();
+    thumbImg.src = `/thumbnails/${name}.jpg`;
+    await new Promise(r => { thumbImg.onload = r; thumbImg.onerror = r; });
+
+    const newImg = {
+      id: Date.now(), version: Date.now(), name: `${name}.bmp`,
+      orientation: uploadOrient, thumbImg,
+      previewCanvas: out,  // fertig gerendert mit E-Ink-Filter, sofort als Vorschau nutzbar
+    };
+    images.push(newImg);
+
+    pendingIndex = images.length - 1;
+    renderDisplay(pendingIndex, false);
+    renderPlaylistBar();
+    updateGallery();
+    updateCounter();
+    showToast(`✓ ${newImg.name} hochgeladen (${uploadOrient === 'portrait' ? 'Hochformat' : 'Querformat'})`);
+
+  } catch(e) {
+    label.textContent = 'Fehler beim Hochladen';
+    showToast('Fehler beim Hochladen');
+    await new Promise(r => setTimeout(r, 1500));
+  } finally {
+    prog.classList.remove('show');
+    fill.style.width = '0%';
+    document.getElementById('dropZoneWrap').style.display = '';
+    document.getElementById('fileInput').value = '';
+    cropImage = null; baseCanvas = null; rotation = 0; cropBox = null; dragMode = null;
+  }
+}
+
+// ── DELETE ────────────────────────────────────────────────────
+function openDeleteModal(i) {
+  deleteTarget = i;
+  document.getElementById('deleteModal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('deleteModal').classList.remove('show');
+  deleteTarget = null;
+}
+async function confirmDelete() {
+  if(deleteTarget === null) return;
+  const idx = deleteTarget;        // vor closeModal() sichern — closeModal setzt deleteTarget = null
+  const img = images[idx];
+  closeModal();
+
+  try {
+    const res = await fetchWithTimeout(`/api/image?name=${img.name}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error();
+  } catch(e) {
+    showToast('Fehler beim Löschen');
+    return;
+  }
+
+  images.splice(idx, 1);
+  if(idx <= currentIndex) currentIndex = Math.max(0, currentIndex - 1);
+  if(currentIndex >= images.length)  currentIndex = Math.max(0, images.length - 1);
+  if(pendingIndex !== null) {
+    if(pendingIndex >= images.length) pendingIndex = null;
+    else if(pendingIndex === idx)     pendingIndex = null;
+    else if(idx < pendingIndex)       pendingIndex--;
+  }
+
+  if(images.length > 0) {
+    renderDisplay(pendingIndex !== null ? pendingIndex : currentIndex, false);
+  } else {
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#F0EDE8'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#AEAEB2'; ctx.font = 'bold 32px DM Sans, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText('Keine Bilder', canvas.width/2, canvas.height/2);
+  }
+
+  updateGallery();
+  updateCounter();
+  renderPlaylistBar();
+  showToast(`🗑 ${img.name} gelöscht`);
+}
+
+// ── DROP ZONE ─────────────────────────────────────────────────
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) handleFile(file);
+});
+
+// ── TOAST ─────────────────────────────────────────────────────
+function showToast(msg) {
+  const wrap = document.getElementById('toastWrap');
+  // Remove any existing toast immediately
+  wrap.innerHTML = '';
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => t.remove(), 2900);
+}
+
+// ── SLEEP TIMEOUT ─────────────────────────────────────────────
+let sleepTimeoutMin = 5;
+function setSleepTimeout(min, btn) {
+  sleepTimeoutMin = min;
+  document.querySelectorAll('#sleepTimeout .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sleepTimeoutDesc').textContent =
+    `AP schaltet sich nach ${min} Minute${min === 1 ? '' : 'n'} ohne Aktivität ab`;
+  showToast(`⏱ Timeout: ${min} Min`);
+}
+
+// ── RTC CLOCK ─────────────────────────────────────────────────
+let rtcSynced = false;
+let rtcOffset = 0; // ms offset between browser Date.now() and "RTC time"
+
+function startRtcClock() {
+  function tick() {
+    const now = new Date(Date.now() + rtcOffset);
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ss = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('rtcClock').textContent = `${hh}:${mm}:${ss}`;
+
+    if(rtcSynced) {
+      const days = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+      const months = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+      document.getElementById('rtcDate').textContent =
+        `${days[now.getDay()]}, ${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
+    }
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+function syncRtcNow() {
+  // Simulate syncing RTC to browser time
+  rtcOffset = 0; // use real browser time
+  rtcSynced = true;
+
+  const dot = document.getElementById('rtcStatusDot');
+  const txt = document.getElementById('rtcStatusText');
+  dot.style.background = 'var(--green)';
+  txt.textContent = 'Synchronisiert';
+  txt.style.color = 'var(--green)';
+
+  document.getElementById('rtcSyncNote').innerHTML =
+    `✓ RTC zuletzt synchronisiert: ${new Date().toLocaleString('de-DE')}`;
+
+  // Pre-fill manual input with current time
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+    .toISOString().slice(0,16);
+  document.getElementById('manualTimeInput').value = local;
+  document.getElementById('manualSyncBtn').disabled = false;
+
+  showToast('✓ RTC mit Browserzeit synchronisiert');
+}
+
+function onManualTimeChange() {
+  const val = document.getElementById('manualTimeInput').value;
+  document.getElementById('manualSyncBtn').disabled = !val;
+}
+
+function syncRtcManual() {
+  const val = document.getElementById('manualTimeInput').value;
+  if(!val) return;
+
+  const target = new Date(val);
+  rtcOffset = target.getTime() - Date.now();
+  rtcSynced = true;
+
+  const dot = document.getElementById('rtcStatusDot');
+  const txt = document.getElementById('rtcStatusText');
+  dot.style.background = 'var(--green)';
+  txt.textContent = 'Manuell gesetzt';
+  txt.style.color = 'var(--green)';
+
+  document.getElementById('rtcSyncNote').innerHTML =
+    `✓ RTC manuell gesetzt auf: ${target.toLocaleString('de-DE')}`;
+
+  showToast(`✓ RTC gesetzt: ${target.toLocaleTimeString('de-DE')}`);
+}
+function updateBattery(pct, v) {
+  const pctStr = pct.toFixed(1) + '%';
+  const fill = document.getElementById('battFill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct > 50 ? '#34C759' : pct > 20 ? '#FF9500' : '#FF3B30';
+  document.getElementById('battLabel').textContent = pctStr;
+  const battPct = document.getElementById('battPct');
+  if (battPct) battPct.textContent = pctStr;
+}
+
+// Close modal on background click
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if(e.target === this) closeModal();
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+renderPlaylistBar();
+updateGallery();     // zeigt sofort Leer-Zustand
+updateCounter();
+updateSchedule();
+startRtcClock();
+fetchStatus();                                    // async: Akku + SD-Anzeige
+fetchImages().then(() => fetchPlaylists());       // Playlists erst laden wenn Images bekannt
+
+// Status periodisch aktualisieren (Akku, SD-Speicher)
+setInterval(fetchStatus, 60000);
+
+</script>
+</body>
+</html>

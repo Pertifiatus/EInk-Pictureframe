@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galerie</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #107C10;
+            --green-hover: #0e6b0e;
+            --green-pale: #e8f5e8;
+            --bg: #f2f2f2;
+            --surface: #ffffff;
+            --border: #ddd;
+            --text: #1a1a1a;
+            --text-2: #606060;
+            --text-3: #9a9a9a;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 28px rgba(0,0,0,0.15);
+            --r: 6px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+        .topbar-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 28px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .logo-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-icon svg { color: white; }
+        .logo-name {
+            font-weight: 800;
+            font-size: 17px;
+            color: var(--text);
+            letter-spacing: -0.4px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 2px;
+            flex: 1;
+        }
+        .nav-btn {
+            padding: 7px 15px;
+            border-radius: var(--r);
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-2);
+            cursor: pointer;
+            transition: all 0.14s;
+            user-select: none;
+            border: none;
+            background: none;
+            font-family: inherit;
+        }
+        .nav-btn:hover { background: #f0f0f0; color: var(--text); }
+        .nav-btn.active { background: var(--green-pale); color: var(--green); }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--r);
+            border: 1.5px solid var(--border);
+            background: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-2);
+            transition: all 0.14s;
+        }
+        .icon-btn:hover { background: #f0f0f0; color: var(--text); border-color: #bbb; }
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--green);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── MAIN ── */
+        .main {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 28px 28px 60px;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            height: 360px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 36px;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+        }
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            display: block;
+        }
+        .hero:hover .hero-img { transform: scale(1.04); }
+        .hero-grad {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(105deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.3) 45%, transparent 70%);
+        }
+        .hero-body {
+            position: absolute;
+            bottom: 32px;
+            left: 36px;
+        }
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--green);
+            color: #fff;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 4px 11px;
+            border-radius: 3px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .hero-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.08;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+            letter-spacing: -0.5px;
+        }
+        .hero-sub {
+            color: rgba(255,255,255,0.72);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .hero-btns {
+            position: absolute;
+            right: 32px;
+            bottom: 32px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 22px;
+            border-radius: var(--r);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .btn-green { background: var(--green); color: #fff; }
+        .btn-green:hover { background: var(--green-hover); }
+        .btn-ghost {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            border: 1.5px solid rgba(255,255,255,0.35);
+            backdrop-filter: blur(10px);
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,0.28); }
+
+        /* ── SECTION HEADER ── */
+        .sec-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .sec-title {
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .count-badge {
+            background: var(--green-pale);
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 11px;
+            border-radius: 20px;
+        }
+
+        .filters {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+        .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+        .chip {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-2);
+            cursor: pointer;
+            transition: all 0.14s;
+            font-family: inherit;
+        }
+        .chip:hover { border-color: var(--green); color: var(--green); }
+        .chip.active { background: var(--green); border-color: var(--green); color: #fff; }
+
+        .sort-wrap { position: relative; }
+        .sort-select {
+            padding: 7px 30px 7px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-2);
+            cursor: pointer;
+            font-family: inherit;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 11px center;
+        }
+
+        /* ── GRID ── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .tile {
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            background: #ddd;
+            aspect-ratio: 16/10;
+            box-shadow: var(--shadow);
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+        }
+        .tile:hover {
+            transform: scale(1.035) translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            z-index: 2;
+        }
+        .tile.wide { grid-column: span 2; }
+
+        .tile-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .tile:hover .tile-img { transform: scale(1.06); }
+
+        .tile-info {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 55%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 14px 16px;
+        }
+        .tile:hover .tile-info { opacity: 1; }
+        .tile-name {
+            color: #fff;
+            font-size: 12.5px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .tile-meta { color: rgba(255,255,255,0.65); font-size: 11px; font-weight: 500; }
+
+        .tile-top {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition: all 0.2s ease;
+        }
+        .tile:hover .tile-top { opacity: 1; transform: translateY(0); }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.92);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            transition: all 0.14s;
+            backdrop-filter: blur(6px);
+        }
+        .action-btn:hover { background: #fff; transform: scale(1.1); }
+        .action-btn.fav { background: var(--green); color: #fff; }
+        .action-btn.fav:hover { background: var(--green-hover); }
+
+        /* ── LIGHTBOX ── */
+        .lb {
+            position: fixed;
+            inset: 0;
+            background: rgba(10,10,10,0.93);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s ease;
+        }
+        .lb.open { opacity: 1; pointer-events: all; }
+
+        .lb-wrap {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+        .lb-img {
+            max-width: 88vw;
+            max-height: 80vh;
+            border-radius: 10px;
+            object-fit: contain;
+            display: block;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            transform: scale(0.93);
+            transition: transform 0.3s ease;
+        }
+        .lb.open .lb-img { transform: scale(1); }
+
+        .lb-caption {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .lb-caption strong { color: rgba(255,255,255,0.9); }
+
+        .lb-close {
+            position: fixed;
+            top: 22px;
+            right: 22px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.14s;
+        }
+        .lb-close:hover { background: rgba(255,255,255,0.22); }
+
+        .lb-nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            border: none;
+            color: #fff;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.14s;
+        }
+        .lb-nav:hover { background: rgba(255,255,255,0.22); }
+        .lb-prev { left: 22px; }
+        .lb-next { right: 22px; }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .tile { animation: fadeUp 0.4s ease both; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1100px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 760px) {
+            .grid { grid-template-columns: repeat(2, 1fr); }
+            .nav-btn:not(.active) { display: none; }
+            .hero { height: 230px; }
+            .hero-title { font-size: 26px; }
+        }
+        @media (max-width: 480px) {
+            .grid { grid-template-columns: 1fr; }
+            .tile.wide { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="logo" href="#">
+            <div class="logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="4"/>
+                    <line x1="12" y1="2" x2="12" y2="8"/>
+                    <line x1="12" y1="16" x2="12" y2="22"/>
+                    <line x1="2" y1="12" x2="8" y2="12"/>
+                    <line x1="16" y1="12" x2="22" y2="12"/>
+                </svg>
+            </div>
+            <span class="logo-name">Galerie</span>
+        </a>
+
+        <nav class="nav">
+            <button class="nav-btn active" onclick="switchNav(this)">Meine Bibliothek</button>
+            <button class="nav-btn" onclick="switchNav(this)">Zuletzt</button>
+            <button class="nav-btn" onclick="switchNav(this)">Alben</button>
+            <button class="nav-btn" onclick="switchNav(this)">Favoriten</button>
+            <button class="nav-btn" onclick="switchNav(this)">Geteilt</button>
+        </nav>
+
+        <div class="topbar-actions">
+            <button class="icon-btn" title="Suchen">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+            </button>
+            <button class="icon-btn" title="Upload">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+            </button>
+            <div class="avatar">PK</div>
+        </div>
+    </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+    <!-- HERO -->
+    <div class="hero" onclick="openLb('hero42', 'Sonnenuntergang am See', '15. Mär 2026', '4032 × 3024 · 8,4 MB')">
+        <img class="hero-img" src="https://picsum.photos/seed/hero42/1400/500" alt="Featured">
+        <div class="hero-grad"></div>
+        <div class="hero-body">
+            <div class="hero-pill">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Highlight des Tages
+            </div>
+            <div class="hero-title">Sonnenuntergang<br>am See</div>
+            <div class="hero-sub">15. März 2026 · iPhone 16 Pro · 4032 × 3024</div>
+        </div>
+        <div class="hero-btns">
+            <button class="btn btn-ghost" onclick="event.stopPropagation()">Teilen</button>
+            <button class="btn btn-green" onclick="event.stopPropagation(); openLb('hero42','Sonnenuntergang am See','15. Mär 2026','4032 × 3024 · 8,4 MB')">Öffnen</button>
+        </div>
+    </div>
+
+    <!-- SECTION HEADER -->
+    <div class="sec-top">
+        <div class="sec-title">
+            Alle Fotos
+            <span class="count-badge" id="countBadge">247 Fotos</span>
+        </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+        <div class="chips">
+            <button class="chip active" onclick="setChip(this)">Alle</button>
+            <button class="chip" onclick="setChip(this)">Fotos</button>
+            <button class="chip" onclick="setChip(this)">Videos</button>
+            <button class="chip" onclick="setChip(this)">Screenshots</button>
+            <button class="chip" onclick="setChip(this)">Favoriten</button>
+        </div>
+        <div class="sort-wrap">
+            <select class="sort-select" onchange="sortGallery(this.value)">
+                <option value="newest">Neueste zuerst</option>
+                <option value="oldest">Älteste zuerst</option>
+                <option value="name">Name (A–Z)</option>
+                <option value="size">Größte zuerst</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="grid" id="grid"></div>
+
+</main>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" onclick="closeLbBg(event)">
+    <button class="lb-close" onclick="closeLb()">✕</button>
+    <button class="lb-nav lb-prev" onclick="navLb(-1)">‹</button>
+    <div class="lb-wrap">
+        <img class="lb-img" id="lbImg" src="" alt="">
+        <div class="lb-caption" id="lbCap"></div>
+    </div>
+    <button class="lb-nav lb-next" onclick="navLb(1)">›</button>
+</div>
+
+<script>
+    /* ── DATA ── */
+    const photos = [
+        { seed:'p15',  name:'IMG_0042.jpg', date:'26. Mär 2026', size:'4032×3024', mb:'7.2 MB', wide:true  },
+        { seed:'p22',  name:'IMG_0043.jpg', date:'26. Mär 2026', size:'4032×3024', mb:'6.8 MB', wide:false },
+        { seed:'p35',  name:'IMG_0044.jpg', date:'25. Mär 2026', size:'4032×3024', mb:'5.4 MB', wide:false },
+        { seed:'p48',  name:'IMG_0045.jpg', date:'25. Mär 2026', size:'4032×3024', mb:'8.1 MB', wide:false },
+        { seed:'p57',  name:'IMG_0046.jpg', date:'25. Mär 2026', size:'4032×3024', mb:'6.0 MB', wide:false },
+        { seed:'p63',  name:'IMG_0047.jpg', date:'24. Mär 2026', size:'4032×3024', mb:'9.2 MB', wide:true  },
+        { seed:'p74',  name:'IMG_0048.jpg', date:'24. Mär 2026', size:'4032×3024', mb:'7.7 MB', wide:false },
+        { seed:'p82',  name:'IMG_0049.jpg', date:'24. Mär 2026', size:'4032×3024', mb:'5.9 MB', wide:false },
+        { seed:'p91',  name:'IMG_0050.jpg', date:'23. Mär 2026', size:'4032×3024', mb:'8.5 MB', wide:false },
+        { seed:'p103', name:'IMG_0051.jpg', date:'23. Mär 2026', size:'4032×3024', mb:'6.3 MB', wide:false },
+        { seed:'p115', name:'IMG_0052.jpg', date:'22. Mär 2026', size:'4032×3024', mb:'7.1 MB', wide:true  },
+        { seed:'p127', name:'IMG_0053.jpg', date:'22. Mär 2026', size:'4032×3024', mb:'5.5 MB', wide:false },
+        { seed:'p139', name:'IMG_0054.jpg', date:'21. Mär 2026', size:'4032×3024', mb:'6.7 MB', wide:false },
+        { seed:'p152', name:'IMG_0055.jpg', date:'21. Mär 2026', size:'4032×3024', mb:'8.9 MB', wide:false },
+        { seed:'p164', name:'IMG_0056.jpg', date:'20. Mär 2026', size:'4032×3024', mb:'7.4 MB', wide:false },
+        { seed:'p177', name:'IMG_0057.jpg', date:'20. Mär 2026', size:'4032×3024', mb:'6.2 MB', wide:false },
+    ];
+
+    const favs = new Set();
+    let currentIdx = -1;
+
+    /* ── BUILD GRID ── */
+    function buildGrid(list) {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        list.forEach((p, i) => {
+            const isFav = favs.has(p.seed);
+            const delay = (i * 0.045 + 0.04).toFixed(2);
+            const w = p.wide ? 800 : 400;
+            const tile = document.createElement('div');
+            tile.className = 'tile' + (p.wide ? ' wide' : '');
+            tile.style.animationDelay = delay + 's';
+            tile.dataset.idx = i;
+            tile.innerHTML = `
+                <img class="tile-img" src="https://picsum.photos/seed/${p.seed}/${w}/300" alt="${p.name}" loading="lazy">
+                <div class="tile-info">
+                    <div class="tile-name">${p.name}</div>
+                    <div class="tile-meta">${p.date} · ${p.size} · ${p.mb}</div>
+                </div>
+                <div class="tile-top">
+                    <button class="action-btn ${isFav ? 'fav' : ''}" title="${isFav ? 'Aus Favoriten entfernen' : 'Favorisieren'}" onclick="toggleFav(event,'${p.seed}',this)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn" title="Teilen" onclick="event.stopPropagation()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn" title="Info" onclick="event.stopPropagation()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            tile.addEventListener('click', (e) => {
+                if (!e.target.closest('.action-btn')) {
+                    currentIdx = i;
+                    openLb(p.seed, p.name, p.date, `${p.size} · ${p.mb}`);
+                }
+            });
+            grid.appendChild(tile);
+        });
+    }
+
+    /* ── FAVORITES ── */
+    function toggleFav(e, seed, btn) {
+        e.stopPropagation();
+        if (favs.has(seed)) {
+            favs.delete(seed);
+            btn.classList.remove('fav');
+            btn.querySelector('svg').setAttribute('fill', 'none');
+        } else {
+            favs.add(seed);
+            btn.classList.add('fav');
+            btn.querySelector('svg').setAttribute('fill', 'currentColor');
+        }
+    }
+
+    /* ── LIGHTBOX ── */
+    function openLb(seed, name, date, info) {
+        const lb = document.getElementById('lb');
+        document.getElementById('lbImg').src = `https://picsum.photos/seed/${seed}/1200/800`;
+        document.getElementById('lbCap').innerHTML = `<strong>${name}</strong> &nbsp;·&nbsp; ${date} &nbsp;·&nbsp; ${info}`;
+        lb.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLb() {
+        document.getElementById('lb').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    function closeLbBg(e) { if (e.target === e.currentTarget) closeLb(); }
+    function navLb(dir) {
+        currentIdx = (currentIdx + dir + photos.length) % photos.length;
+        const p = photos[currentIdx];
+        document.getElementById('lbImg').src = `https://picsum.photos/seed/${p.seed}/1200/800`;
+        document.getElementById('lbCap').innerHTML = `<strong>${p.name}</strong> &nbsp;·&nbsp; ${p.date} &nbsp;·&nbsp; ${p.size} · ${p.mb}`;
+    }
+    document.addEventListener('keydown', e => {
+        if (!document.getElementById('lb').classList.contains('open')) return;
+        if (e.key === 'Escape') closeLb();
+        if (e.key === 'ArrowRight') navLb(1);
+        if (e.key === 'ArrowLeft') navLb(-1);
+    });
+
+    /* ── FILTERS & NAV ── */
+    function setChip(el) {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+    }
+    function switchNav(el) {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+    }
+    function sortGallery(val) {
+        let sorted = [...photos];
+        if (val === 'oldest') sorted.reverse();
+        else if (val === 'name') sorted.sort((a,b) => a.name.localeCompare(b.name));
+        buildGrid(sorted);
+    }
+
+    /* ── INIT ── */
+    buildGrid(photos);
+</script>
+</body>
+</html>

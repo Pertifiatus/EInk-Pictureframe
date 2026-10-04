@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Meine Bibliothek</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+
+<style>
+/* ─────────────────────────────────────────────
+   RESET
+───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─────────────────────────────────────────────
+   TOKENS — warm candlelit library
+───────────────────────────────────────────── */
+:root {
+  /* Parchment & paper */
+  --parch:      #f0e6cc;
+  --parch-deep: #e2d0aa;
+  --parch-mid:  #cbb98a;
+  --ink:        #2c1f0e;
+  --ink-soft:   #5a3e22;
+  --ink-faint:  #9a7a52;
+
+  /* Wood */
+  --wood-hi:    #f5dea0;
+  --wood-top:   #d4a048;
+  --wood-mid:   #a87030;
+  --wood-deep:  #7a4c18;
+  --wood-shade: #3e2008;
+  --wood-knot:  rgba(62,32,8,0.18);
+
+  /* Candle warmth */
+  --glow:       rgba(255,180,60,0.13);
+  --glow-str:   rgba(255,160,40,0.22);
+  --amber:      #c07820;
+  --amber-pale: rgba(192,120,32,0.14);
+
+  /* Accents */
+  --green-bk:   #2c4a2e;
+  --red-bk:     #6e1c1c;
+  --navy-bk:    #1a2848;
+
+  /* Sep */
+  --sep:        rgba(90,62,34,0.18);
+}
+
+/* ─────────────────────────────────────────────
+   BASE
+───────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Lora', Georgia, serif;
+  background: var(--parch);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Aged paper texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  background-size: 350px 350px;
+  mix-blend-mode: multiply;
+  opacity: 1;
+}
+
+/* warm vignette */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 20%, var(--glow) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 40% at 0%   50%, var(--glow-str) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 40% at 100% 50%, var(--glow-str) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(62,32,8,0.10) 100%);
+}
+
+/* ─────────────────────────────────────────────
+   HEADER
+───────────────────────────────────────────── */
+.lib-header {
+  position: relative; z-index: 200;
+  background:
+    linear-gradient(180deg, var(--parch-deep) 0%, var(--parch) 100%);
+  border-bottom: 2px solid var(--parch-mid);
+  box-shadow: 0 2px 18px rgba(62,32,8,0.13), 0 1px 0 rgba(255,220,120,0.4);
+  padding: 18px clamp(18px,5vw,60px) 14px;
+}
+
+/* decorative rule */
+.lib-header::after {
+  content: '— ✦ —';
+  display: block; text-align: center;
+  font-family: 'IM Fell English', serif;
+  font-size: 0.7rem; letter-spacing: 0.25em;
+  color: var(--ink-faint); margin-top: 8px; opacity: 0.6;
+}
+
+.header-top {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+
+.header-title {
+  font-family: 'IM Fell English', serif;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  color: var(--ink); font-style: italic;
+  letter-spacing: 0.03em; line-height: 1;
+  text-shadow: 0 1px 0 rgba(255,220,120,0.5);
+  flex: 1; min-width: 160px;
+}
+
+.header-crumb {
+  font-family: 'Lora', serif; font-style: italic;
+  font-size: 0.82rem; color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+/* ─────────────────────────────────────────────
+   BUTTONS — inky stamp style
+───────────────────────────────────────────── */
+.btn {
+  font-family: 'Lora', serif; font-size: 0.8rem;
+  padding: 7px 16px; border-radius: 3px; cursor: pointer;
+  border: none; letter-spacing: 0.04em; transition: all 0.18s;
+  -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  white-space: nowrap; font-style: italic;
+}
+.btn:active { transform: scale(0.96); }
+
+.btn-ink {
+  background: var(--ink); color: var(--parch);
+  box-shadow: 2px 2px 0 var(--wood-deep), 0 2px 8px rgba(44,31,14,0.25);
+}
+.btn-ink:hover { background: var(--ink-soft); }
+
+.btn-stamp {
+  background: var(--parch-deep); color: var(--ink-soft);
+  border: 1.5px solid var(--parch-mid);
+  box-shadow: 1px 1px 0 var(--parch-mid);
+}
+.btn-stamp:hover { background: var(--parch-mid); }
+
+.btn-done {
+  background: var(--amber); color: #fff;
+  box-shadow: 2px 2px 0 var(--wood-deep), 0 2px 8px rgba(192,120,32,0.3);
+}
+.btn-done:hover { background: #a86018; }
+
+/* ─────────────────────────────────────────────
+   ROOM / WALL BACKGROUND
+───────────────────────────────────────────── */
+.room {
+  position: relative; z-index: 1;
+  min-height: calc(100vh - 100px);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 119px,
+      rgba(90,62,34,0.04) 119px, rgba(90,62,34,0.04) 120px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 179px,
+      rgba(90,62,34,0.03) 179px, rgba(90,62,34,0.03) 180px
+    );
+}
+
+/* ─────────────────────────────────────────────
+   SHELF UNIT
+───────────────────────────────────────────── */
+.shelf-unit { padding: 0 clamp(16px,4vw,56px); margin-bottom: 4px; }
+
+/* ─────────────────────────────────────────────
+   OAK PLANK — rich, layered
+───────────────────────────────────────────── */
+.shelf-plank {
+  height: 38px; border-radius: 4px 4px 0 0;
+  position: relative; overflow: hidden;
+  background:
+    /* grain lines */
+    repeating-linear-gradient(90deg,
+      transparent 0px, transparent 22px,
+      rgba(62,32,8,0.06) 22px, rgba(62,32,8,0.06) 23px,
+      transparent 23px, transparent 54px,
+      rgba(255,255,255,0.07) 54px, rgba(255,255,255,0.07) 55px,
+      transparent 55px, transparent 88px,
+      rgba(62,32,8,0.04) 88px, rgba(62,32,8,0.04) 90px
+    ),
+    /* knots */
+    repeating-linear-gradient(180deg,
+      rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 1px,
+      transparent 1px, transparent 4px,
+      rgba(62,32,8,0.04) 4px, rgba(62,32,8,0.04) 5px,
+      transparent 5px, transparent 10px
+    ),
+    /* base gradient */
+    linear-gradient(180deg,
+      var(--wood-hi)    0%,
+      var(--wood-top)   5%,
+      #c48838          16%,
+      var(--wood-mid)  32%,
+      #8c5c24          56%,
+      var(--wood-deep) 78%,
+      var(--wood-shade) 100%
+    );
+  box-shadow:
+    0 8px 22px rgba(62,32,8,0.28),
+    0 3px 6px rgba(62,32,8,0.20),
+    0 1px 0 rgba(62,32,8,0.50),
+    inset 0 1px 0 rgba(255,230,140,0.30),
+    inset 0 -3px 8px rgba(0,0,0,0.20);
+}
+
+.shelf-plank::before {
+  /* sheen stripe */
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg,
+    transparent  0%,
+    rgba(255,235,150,0.28) 15%,
+    rgba(255,235,150,0.45) 50%,
+    rgba(255,235,150,0.28) 85%,
+    transparent 100%);
+}
+
+.shelf-plank::after {
+  /* front edge shadow */
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 8px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.22) 100%);
+}
+
+/* ─────────────────────────────────────────────
+   BOOK ROW
+───────────────────────────────────────────── */
+.book-row {
+  display: flex; align-items: flex-end;
+  padding: 32px 10px 0; gap: 3px; min-height: 260px;
+}
+
+/* ─────────────────────────────────────────────
+   BOOK
+───────────────────────────────────────────── */
+.book {
+  flex-shrink: 0; position: relative;
+  border-radius: 2px 5px 5px 2px;
+  cursor: pointer; transform-origin: bottom center;
+  transition:
+    transform 0.34s cubic-bezier(0.34,1.56,0.64,1),
+    box-shadow 0.28s, filter 0.22s;
+  user-select: none; -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+/* left binder spine crease */
+.book::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; bottom: 0; width: 8px;
+  border-radius: 2px 0 0 2px;
+  background:
+    linear-gradient(90deg,
+      rgba(0,0,0,0.28) 0%,
+      rgba(0,0,0,0.12) 60%,
+      transparent 100%);
+  z-index: 2;
+}
+
+/* right gloss */
+.book::after {
+  content: ''; position: absolute;
+  top: 0; right: 0; bottom: 0; width: 6px;
+  border-radius: 0 5px 5px 0;
+  background: linear-gradient(90deg,
+    rgba(0,0,0,0.12) 0%,
+    rgba(255,255,255,0.12) 100%);
+  z-index: 2;
+}
+
+/* top edge */
+.book-top {
+  position: absolute; top: 0; left: 0; right: 0; height: 5px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 2px 5px 0 0; z-index: 3;
+}
+
+.book:not(.edit-freeze):hover {
+  transform: translateY(-26px) rotate(0deg) !important;
+  filter: brightness(1.10) saturate(1.12);
+  z-index: 60;
+  box-shadow:
+    4px -2px 22px rgba(0,0,0,0.35),
+    -2px 0 10px rgba(0,0,0,0.18),
+    0 26px 30px rgba(62,32,8,0.20) !important;
+}
+
+/* ── EDIT MODE ── */
+.drag-mode .book {
+  cursor: grab;
+  animation: sway 0.6s ease-in-out infinite alternate;
+}
+.drag-mode .book:nth-child(2n)   { animation-delay: 0.10s; animation-duration: 0.55s; }
+.drag-mode .book:nth-child(3n)   { animation-delay: 0.20s; animation-duration: 0.65s; }
+.drag-mode .book:nth-child(4n)   { animation-delay: 0.08s; animation-duration: 0.58s; }
+.drag-mode .book:nth-child(5n)   { animation-delay: 0.18s; animation-duration: 0.62s; }
+
+@keyframes sway {
+  from { transform: rotate(calc(var(--br, 0) * 1deg - 0.5deg)) translateY(0px); }
+  to   { transform: rotate(calc(var(--br, 0) * 1deg + 0.5deg)) translateY(-2px); }
+}
+
+.drag-mode .book:hover { cursor: grabbing; animation: none !important; }
+
+.book.dragging {
+  opacity: 0.32; filter: none !important;
+  transform: scale(0.94) rotate(0deg) !important;
+  animation: none !important; box-shadow: none !important;
+}
+
+.book.drag-target {
+  outline: 2.5px dashed var(--amber);
+  outline-offset: 5px;
+  filter: brightness(1.12);
+  z-index: 70;
+  animation: none !important;
+}
+
+/* ghost for touch drag */
+#drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9000;
+  opacity: 0.82;
+  transform: rotate(-4deg) scale(1.08);
+  filter: drop-shadow(0 8px 22px rgba(0,0,0,0.45));
+  display: none;
+  border-radius: 2px 5px 5px 2px;
+}
+
+/* ─────────────────────────────────────────────
+   BOOK INNER
+───────────────────────────────────────────── */
+.book-inner {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 14px 7px; overflow: hidden; position: relative;
+}
+
+.book-ornament {
+  font-family: 'IM Fell English', serif;
+  font-size: 9px; opacity: 0.35; flex-shrink: 0;
+  letter-spacing: 0.08em;
+}
+
+.book-rule {
+  width: 52%; height: 1px; opacity: 0.25;
+  flex-shrink: 0; margin: 4px 0;
+}
+
+.book-title {
+  writing-mode: vertical-rl; text-orientation: mixed;
+  transform: rotate(180deg);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(8px,1.2vw,12.5px); font-weight: 600;
+  line-height: 1.2; letter-spacing: 0.06em;
+  text-align: center; max-height: 76%; overflow: hidden;
+  word-break: break-word;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.50);
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--ink);
+  color: var(--parch); font-family: 'Lora', serif;
+  font-style: italic; font-size: 0.82rem;
+  padding: 10px 22px; border-radius: 2px;
+  border-bottom: 2px solid var(--amber);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.30), 0 8px 24px rgba(0,0,0,0.25);
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.30s, transform 0.30s;
+  z-index: 500; white-space: nowrap; letter-spacing: 0.03em;
+}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─────────────────────────────────────────────
+   ALBUM VIEW
+───────────────────────────────────────────── */
+#album-view { display: none; }
+#album-view.active { display: block; }
+
+.album-intro {
+  padding: 28px clamp(16px,5vw,56px) 0;
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+}
+
+.album-name-big {
+  font-family: 'IM Fell English', serif;
+  font-size: clamp(1.7rem,5vw,2.8rem);
+  font-style: italic; color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255,220,120,0.40);
+}
+
+.album-badge {
+  font-family: 'Lora', serif; font-size: 0.75rem; font-style: italic;
+  color: var(--ink-faint);
+  border: 1px solid var(--parch-mid);
+  background: var(--parch-deep);
+  padding: 3px 12px; border-radius: 2px;
+}
+
+/* ─────────────────────────────────────────────
+   PHOTO ROW
+───────────────────────────────────────────── */
+.photo-row {
+  display: flex; align-items: flex-end;
+  padding: 26px 10px 0; gap: 12px;
+  flex-wrap: wrap; min-height: 220px;
+}
+
+/* ─────────────────────────────────────────────
+   PHOTO ITEM
+───────────────────────────────────────────── */
+.photo-item {
+  flex-shrink: 0; position: relative; cursor: pointer;
+  overflow: visible;
+  transition: transform 0.30s cubic-bezier(0.34,1.4,0.64,1), filter 0.22s;
+}
+.photo-item:hover { filter: brightness(1.05); z-index: 40; }
+
+.photo-item img {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; border-radius: 1px;
+}
+
+/* polaroid frame */
+.photo-item::before {
+  content: ''; position: absolute; inset: 0;
+  border: 7px solid #faf5e8; border-bottom-width: 26px;
+  z-index: 2; pointer-events: none; border-radius: 1px;
+  box-shadow:
+    inset 0 0 0 1px rgba(90,62,34,0.09),
+    0 5px 20px rgba(62,32,8,0.22),
+    0 2px 5px rgba(62,32,8,0.14);
+}
+
+.photo-num {
+  position: absolute; bottom: 6px; left: 0; right: 0;
+  text-align: center; font-size: 7px;
+  font-family: 'Lora', serif; font-style: italic;
+  color: rgba(90,62,34,0.35); letter-spacing: 0.06em;
+  z-index: 3; pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────
+   LIGHTBOX
+───────────────────────────────────────────── */
+#lightbox {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: rgba(240,230,204,0.93);
+  backdrop-filter: blur(26px) saturate(1.2);
+  -webkit-backdrop-filter: blur(26px) saturate(1.2);
+  align-items: center; justify-content: center;
+}
+#lightbox.active { display: flex; }
+
+.lb-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+
+#lightbox-img {
+  max-width: 84vw; max-height: 84vh; object-fit: contain;
+  border-radius: 1px;
+  box-shadow:
+    0 0 0 8px #faf5e8,
+    0 0 0 9px rgba(90,62,34,0.08),
+    0 12px 50px rgba(62,32,8,0.30),
+    0 40px 80px rgba(62,32,8,0.16);
+  animation: lbIn 0.28s cubic-bezier(0.34,1.3,0.64,1) both;
+}
+@keyframes lbIn {
+  from { transform: scale(0.88); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.lb-btn {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: var(--parch-deep);
+  border: 1.5px solid var(--parch-mid); border-radius: 2px;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1.3rem; color: var(--ink-soft);
+  box-shadow: 2px 2px 0 var(--parch-mid);
+  transition: background 0.18s, transform 0.18s; z-index: 2;
+  font-family: 'Playfair Display', serif;
+}
+.lb-btn:hover { background: var(--parch-mid); transform: translateY(-50%) scale(1.06); }
+#lb-prev { left: -60px; }
+#lb-next { right: -60px; }
+
+#lb-close {
+  position: fixed; top: 20px; right: 22px;
+  background: var(--parch-deep);
+  border: 1.5px solid var(--parch-mid); border-radius: 2px;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 0.9rem; color: var(--ink-soft);
+  box-shadow: 2px 2px 0 var(--parch-mid);
+  transition: background 0.18s;
+}
+#lb-close:hover { background: var(--parch-mid); }
+
+/* ─────────────────────────────────────────────
+   PAGE TRANSITION
+───────────────────────────────────────────── */
+.fade-up { animation: fadeUp 0.36s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─────────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-track { background: var(--parch-deep); }
+::-webkit-scrollbar-thumb { background: var(--wood-mid); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--wood-top); }
+
+/* ─────────────────────────────────────────────
+   DECORATIVE FOOTER RULE
+───────────────────────────────────────────── */
+.shelf-spacer {
+  height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IM Fell English', serif;
+  font-size: 0.7rem; color: var(--ink-faint);
+  letter-spacing: 0.3em; opacity: 0.45;
+  padding: 0 clamp(16px,4vw,56px);
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     HEADER
+════════════════════════════════════ -->
+<header class="lib-header">
+  <div class="header-top">
+    <span class="header-title" id="header-title">Meine Bibliothek</span>
+    <span class="header-crumb" id="header-crumb">Wähle ein Album</span>
+    <button class="btn btn-ink" id="edit-btn">⠿ Anordnung</button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════
+     LIBRARY VIEW
+════════════════════════════════════ -->
+<div id="library-view" class="room">
+  <div id="main-shelf"></div>
+  <div class="shelf-spacer" id="lib-footer">✦ &nbsp; Ende des Regals &nbsp; ✦</div>
+</div>
+
+<!-- ══════════════════════════════════
+     ALBUM VIEW
+════════════════════════════════════ -->
+<div id="album-view" class="room">
+  <div class="album-intro">
+    <button class="btn btn-stamp" id="back-btn">← Zurück</button>
+    <span class="album-name-big" id="album-name"></span>
+    <span class="album-badge"    id="album-count"></span>
+  </div>
+  <div id="photo-shelf"></div>
+  <div class="shelf-spacer">✦ &nbsp; Alle Fotos &nbsp; ✦</div>
+</div>
+
+<!-- ══════════════════════════════════
+     LIGHTBOX
+════════════════════════════════════ -->
+<div id="lightbox">
+  <div id="lb-close">✕</div>
+  <div class="lb-wrap">
+    <div class="lb-btn" id="lb-prev">‹</div>
+    <img id="lightbox-img" src="" alt="">
+    <div class="lb-btn" id="lb-next">›</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     TOUCH DRAG GHOST
+════════════════════════════════════ -->
+<div id="drag-ghost"></div>
+
+<!-- ══════════════════════════════════
+     TOAST
+════════════════════════════════════ -->
+<div class="toast" id="toast">Bücher per Drag verschieben</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   ALBUM DATA
+═══════════════════════════════════════════════ */
+const ALBUMS = [
+  { id:  1, name: "Alle Fotos",     color: "#af6028", count: 22 },
+  { id:  2, name: "Per ♡",          color: "#3464a0", count: 18 },
+  { id:  3, name: "Zuhause",        color: "#8a2424", count: 14 },
+  { id:  4, name: "Urlaub Italien", color: "#b89820", dark: true, count: 20 },
+  { id:  5, name: "Familie",        color: "#347038", count: 16 },
+  { id:  6, name: "Stuttgart",      color: "#4e307a", count: 11 },
+  { id:  7, name: "Schule 2024",    color: "#a83e18", count:  9 },
+  { id:  8, name: "Freunde",        color: "#207070", count: 19 },
+  { id:  9, name: "Natur",          color: "#366018", count: 13 },
+  { id: 10, name: "Weihnachten",    color: "#761414", count: 12 },
+  { id: 11, name: "Geburtstag",     color: "#982870", count: 10 },
+  { id: 12, name: "Sommer 2024",    color: "#c07010", count: 17 },
+  { id: 13, name: "Konzerte",       color: "#1c2858", count:  8 },
+  { id: 14, name: "Reisen",         color: "#284848", count: 15 },
+];
+
+/* ═══════════════════════════════════════════════
+   ORDER PERSISTENCE
+═══════════════════════════════════════════════ */
+const KEY = 'lib-order-v3';
+function loadOrder() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (Array.isArray(s) && s.length === ALBUMS.length)
+      return s.map(id => ALBUMS.find(a => a.id === id)).filter(Boolean);
+  } catch(e){}
+  return [...ALBUMS];
+}
+function saveOrder() { localStorage.setItem(KEY, JSON.stringify(order.map(a => a.id))); }
+let order = loadOrder();
+
+/* ═══════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════ */
+const SR  = s => { let x = Math.sin(s + 1.7) * 99999; return x - Math.floor(x); };
+const clp = (v,a,b) => Math.min(b, Math.max(a, v));
+
+function shade(hex, d) {
+  const n = parseInt(hex.replace('#',''), 16);
+  const c = sh => clp(((n >> sh) & 255) + d, 0, 255);
+  return `rgb(${c(16)},${c(8)},${c(0)})`;
+}
+
+// Stable per-album book dimensions
+const BPROPS = {};
+ALBUMS.forEach(a => {
+  BPROPS[a.id] = {
+    w:   Math.round(SR(a.id * 7.13) * 28 + 42),
+    h:   Math.round(SR(a.id * 3.77) * 72 + 155),
+    rot: +(SR(a.id * 11.3) * 8 - 4).toFixed(2),
+  };
+});
+
+function makePlank() {
+  const p = document.createElement('div');
+  p.className = 'shelf-plank'; return p;
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, dur=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('visible'), dur);
+}
+
+/* ═══════════════════════════════════════════════
+   EDIT MODE
+═══════════════════════════════════════════════ */
+let editMode = false;
+const editBtn = document.getElementById('edit-btn');
+
+editBtn.addEventListener('click', () => {
+  editMode = !editMode;
+  if (editMode) {
+    editBtn.textContent = '✓ Fertig';
+    editBtn.className   = 'btn btn-done';
+    showToast('Bücher per Drag & Drop verschieben', 4000);
+  } else {
+    editBtn.textContent = '⠿ Anordnung';
+    editBtn.className   = 'btn btn-ink';
+    saveOrder();
+    showToast('Reihenfolge gespeichert ✦', 2000);
+  }
+  buildMain();
+});
+
+/* ═══════════════════════════════════════════════
+   DRAG & DROP — MOUSE
+═══════════════════════════════════════════════ */
+let dragId = null;
+
+function attachMouseDrag(book, albumId) {
+  book.draggable = true;
+
+  book.addEventListener('dragstart', e => {
+    dragId = albumId;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', albumId);
+    setTimeout(() => book.classList.add('dragging'), 0);
+  });
+  book.addEventListener('dragend', () => {
+    book.classList.remove('dragging');
+    document.querySelectorAll('.book.drag-target').forEach(b => b.classList.remove('drag-target'));
+    dragId = null;
+  });
+  book.addEventListener('dragover', e => {
+    e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+    if (albumId !== dragId) book.classList.add('drag-target');
+  });
+  book.addEventListener('dragleave', () => book.classList.remove('drag-target'));
+  book.addEventListener('drop', e => {
+    e.preventDefault(); book.classList.remove('drag-target');
+    swapBooks(dragId, albumId);
+  });
+}
+
+function swapBooks(srcId, tgtId) {
+  if (!srcId || srcId === tgtId) return;
+  const si = order.findIndex(a => a.id === srcId);
+  const ti = order.findIndex(a => a.id === tgtId);
+  if (si < 0 || ti < 0) return;
+  const [m] = order.splice(si, 1);
+  order.splice(ti, 0, m);
+  buildMain();
+}
+
+/* ═══════════════════════════════════════════════
+   DRAG & DROP — TOUCH
+═══════════════════════════════════════════════ */
+const ghost = document.getElementById('drag-ghost');
+let touchDragId  = null;
+let touchSrcEl   = null;
+let touchOffX    = 0, touchOffY = 0;
+
+function getBookAtPoint(x, y) {
+  // temporarily hide ghost so elementFromPoint works
+  ghost.style.display = 'none';
+  const el = document.elementFromPoint(x, y);
+  ghost.style.display = '';
+  const book = el && el.closest('.book');
+  return book;
+}
+
+function attachTouchDrag(book, albumId) {
+  book.addEventListener('touchstart', e => {
+    if (!editMode) return;
+    const t = e.touches[0];
+    const r = book.getBoundingClientRect();
+    touchOffX   = t.clientX - r.left;
+    touchOffY   = t.clientY - r.top;
+    touchDragId = albumId;
+    touchSrcEl  = book;
+
+    // build ghost as a clone
+    ghost.style.width    = r.width  + 'px';
+    ghost.style.height   = r.height + 'px';
+    ghost.style.background = book.style.background;
+    ghost.style.borderRadius = '2px 5px 5px 2px';
+    ghost.style.left     = (t.clientX - touchOffX) + 'px';
+    ghost.style.top      = (t.clientY - touchOffY) + 'px';
+    ghost.style.display  = 'block';
+
+    // Copy title into ghost
+    ghost.innerHTML = book.innerHTML;
+    book.classList.add('dragging');
+  }, { passive: true });
+
+  book.addEventListener('touchmove', e => {
+    if (!touchDragId) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    ghost.style.left = (t.clientX - touchOffX) + 'px';
+    ghost.style.top  = (t.clientY - touchOffY) + 'px';
+
+    // highlight target
+    document.querySelectorAll('.book.drag-target').forEach(b => b.classList.remove('drag-target'));
+    const target = getBookAtPoint(t.clientX, t.clientY);
+    if (target && +target.dataset.albumId !== touchDragId) {
+      target.classList.add('drag-target');
+    }
+  }, { passive: false });
+
+  book.addEventListener('touchend', e => {
+    if (!touchDragId) return;
+    const t    = e.changedTouches[0];
+    const tgt  = getBookAtPoint(t.clientX, t.clientY);
+    const tgtId = tgt ? +tgt.dataset.albumId : null;
+
+    ghost.style.display = 'none';
+    ghost.innerHTML     = '';
+    touchSrcEl && touchSrcEl.classList.remove('dragging');
+    document.querySelectorAll('.book.drag-target').forEach(b => b.classList.remove('drag-target'));
+
+    if (tgtId && tgtId !== touchDragId) swapBooks(touchDragId, tgtId);
+
+    touchDragId = null; touchSrcEl = null;
+  }, { passive: true });
+}
+
+/* ═══════════════════════════════════════════════
+   BUILD MAIN BOOKSHELF
+═══════════════════════════════════════════════ */
+function buildMain() {
+  const root = document.getElementById('main-shelf');
+  root.innerHTML = '';
+
+  const cols = Math.max(3, Math.floor((window.innerWidth - 80) / 92));
+  for (let i = 0; i < order.length; i += cols) {
+    const rowAlbums = order.slice(i, i + cols);
+    const unit = document.createElement('div'); unit.className = 'shelf-unit';
+    const brow = document.createElement('div');
+    brow.className = 'book-row' + (editMode ? ' drag-mode' : '');
+
+    rowAlbums.forEach(album => {
+      const p   = BPROPS[album.id];
+      const rot = editMode ? 0 : p.rot;
+      const tc  = album.dark ? 'rgba(28,16,4,0.90)' : 'rgba(255,248,232,0.94)';
+      const dc  = album.dark ? 'rgba(0,0,0,0.28)'   : 'rgba(255,255,255,0.25)';
+
+      const book = document.createElement('div');
+      book.className       = 'book';
+      book.dataset.albumId = album.id;
+      book.style.cssText   = `
+        width:${p.w}px; height:${p.h}px;
+        --br: ${p.rot};
+        transform: rotate(${rot}deg);
+        background: linear-gradient(148deg,
+          ${shade(album.color, 44)} 0%,
+          ${album.color}             26%,
+          ${shade(album.color,-12)} 58%,
+          ${shade(album.color,-30)} 100%
+        );
+        box-shadow: ${editMode
+          ? '0 4px 14px rgba(62,32,8,0.18)'
+          : '2px 0 8px rgba(62,32,8,0.28),-1px 0 4px rgba(62,32,8,0.14),inset 7px 0 14px rgba(255,255,255,0.08),inset -3px 0 8px rgba(0,0,0,0.18)'
+        };
+      `;
+
+      // top edge
+      const top = document.createElement('div'); top.className = 'book-top';
+      book.appendChild(top);
+
+      const inner = document.createElement('div'); inner.className = 'book-inner';
+      const orn = document.createElement('div'); orn.className = 'book-ornament';
+      orn.style.color = tc; orn.textContent = '✦';
+      const ru1 = document.createElement('div'); ru1.className = 'book-rule'; ru1.style.background = dc;
+      const tt  = document.createElement('div'); tt.className = 'book-title';
+      tt.style.color = tc; tt.textContent = album.name;
+      const ru2 = document.createElement('div'); ru2.className = 'book-rule'; ru2.style.background = dc;
+      const or2 = document.createElement('div'); or2.className = 'book-ornament';
+      or2.style.color = tc; or2.textContent = '✦';
+
+      inner.append(orn, ru1, tt, ru2, or2);
+      book.appendChild(inner);
+
+      // click → open (not in edit)
+      book.addEventListener('click', () => { if (!editMode) openAlbum(album); });
+
+      if (editMode) {
+        attachMouseDrag(book, album.id);
+        attachTouchDrag(book, album.id);
+      }
+
+      brow.appendChild(book);
+    });
+
+    unit.appendChild(brow); unit.appendChild(makePlank());
+    root.appendChild(unit);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   OPEN ALBUM
+═══════════════════════════════════════════════ */
+let photos = [], lbIdx = 0;
+
+function openAlbum(album) {
+  document.getElementById('library-view').style.display  = 'none';
+  document.getElementById('lib-footer').style.display    = 'none';
+  document.getElementById('edit-btn').style.display      = 'none';
+  document.getElementById('header-crumb').textContent    = album.name;
+
+  document.getElementById('album-name').textContent  = album.name;
+  document.getElementById('album-count').textContent = `${album.count} Fotos`;
+
+  const av = document.getElementById('album-view');
+  av.classList.add('active');
+  av.classList.remove('fade-up'); void av.offsetWidth; av.classList.add('fade-up');
+
+  buildPhotos(album);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ═══════════════════════════════════════════════
+   BUILD PHOTO SHELF
+═══════════════════════════════════════════════ */
+function buildPhotos(album) {
+  const root = document.getElementById('photo-shelf');
+  root.innerHTML = ''; photos = [];
+
+  for (let i = 0; i < album.count; i++) {
+    const s = album.id * 100 + i;
+    photos.push({ seed: s, landscape: SR(s+0.31) > 0.44, rot: +(SR(s+0.71)*14-7).toFixed(2) });
+  }
+
+  const cols = Math.max(2, Math.floor((window.innerWidth - 72) / 200));
+  for (let i = 0; i < photos.length; i += cols) {
+    const slice = photos.slice(i, i+cols).map((p,j) => ({...p, idx: i+j}));
+    const unit  = document.createElement('div'); unit.className = 'shelf-unit';
+    const prow  = document.createElement('div'); prow.className = 'photo-row';
+
+    slice.forEach(ph => {
+      const pw = ph.landscape ? 193 : 122;
+      const ph2= ph.landscape ? 130 : 168;
+
+      const item = document.createElement('div');
+      item.className = 'photo-item';
+      item.style.cssText = `width:${pw}px; height:${ph2}px; transform:rotate(${ph.rot}deg);`;
+
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.src     = `https://picsum.photos/seed/${ph.seed}/${pw*2}/${ph2*2}`;
+      img.alt     = `Foto ${ph.idx+1}`;
+
+      const num = document.createElement('div');
+      num.className = 'photo-num';
+      num.textContent = String(ph.idx+1).padStart(4,'0');
+
+      item.append(img, num);
+      item.addEventListener('mouseenter', () => {
+        item.style.transform = `rotate(0deg) translateY(-14px) scale(1.05)`;
+      });
+      item.addEventListener('mouseleave', () => {
+        item.style.transform = `rotate(${ph.rot}deg)`;
+      });
+      item.addEventListener('click', () => openLb(ph.idx));
+      prow.appendChild(item);
+    });
+
+    unit.appendChild(prow); unit.appendChild(makePlank());
+    root.appendChild(unit);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   BACK
+═══════════════════════════════════════════════ */
+document.getElementById('back-btn').addEventListener('click', () => {
+  document.getElementById('album-view').classList.remove('active');
+  document.getElementById('header-crumb').textContent = 'Wähle ein Album';
+
+  const lv = document.getElementById('library-view');
+  lv.style.display = '';
+  document.getElementById('lib-footer').style.display = '';
+  document.getElementById('edit-btn').style.display = '';
+
+  lv.classList.remove('fade-up'); void lv.offsetWidth; lv.classList.add('fade-up');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+/* ═══════════════════════════════════════════════
+   LIGHTBOX
+═══════════════════════════════════════════════ */
+function openLb(idx) { lbIdx = idx; showLb(); document.getElementById('lightbox').classList.add('active'); }
+function showLb() {
+  const p = photos[lbIdx]; if (!p) return;
+  const w = p.landscape ? 920 : 540, h = p.landscape ? 620 : 760;
+  document.getElementById('lightbox-img').src = `https://picsum.photos/seed/${p.seed}/${w}/${h}`;
+}
+function closeLb() { document.getElementById('lightbox').classList.remove('active'); }
+
+document.getElementById('lb-close').addEventListener('click', closeLb);
+document.getElementById('lightbox').addEventListener('click', e => { if (e.target.id==='lightbox') closeLb(); });
+document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); lbIdx=(lbIdx-1+photos.length)%photos.length; showLb(); });
+document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); lbIdx=(lbIdx+1)%photos.length; showLb(); });
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('active')) return;
+  if (e.key==='ArrowLeft')  { lbIdx=(lbIdx-1+photos.length)%photos.length; showLb(); }
+  if (e.key==='ArrowRight') { lbIdx=(lbIdx+1)%photos.length; showLb(); }
+  if (e.key==='Escape')     closeLb();
+});
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+buildMain();
+
+let rTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(rTimer);
+  rTimer = setTimeout(() => {
+    if (document.getElementById('library-view').style.display !== 'none') buildMain();
+  }, 160);
+});
+</script>
+</body>
+</html>
